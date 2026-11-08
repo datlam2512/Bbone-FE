@@ -24,10 +24,18 @@ export const router = createBrowserRouter([
         Component: PublicLayout,
         children: [
           { index: true, lazy: lazyPage(() => import('@/features/home/pages/HomePage')) },
+          {
+            path: 'thong-tin/:slug',
+            lazy: lazyPage(() => import('@/features/information/pages/InformationPage')),
+          },
           { path: 'dang-nhap', lazy: lazyPage(() => import('@/features/auth/pages/LoginPage')) },
           {
             path: 'san-pham',
             lazy: lazyPage(() => import('@/features/catalog/pages/ProductsPage')),
+          },
+          {
+            path: 'san-pham/:productId',
+            lazy: lazyPage(() => import('@/features/catalog/pages/ProductDetailPage')),
           },
           {
             path: 'phong-kham',

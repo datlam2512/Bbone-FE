@@ -21,8 +21,8 @@ export default function CollectionPage({
   const resource = useResource(loadPage)
   const items = resource.data?.items || []
   return (
-    <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
-      <PageHeading eyebrow="Khám phá cùng BBONE" title={title} description={description} />
+    <div className="mx-auto w-full max-w-[90rem] px-5 py-12 lg:px-8 2xl:px-10">
+      <PageHeading title={title} description={description} />
       <form
         onSubmit={(event) => {
           event.preventDefault()
@@ -44,11 +44,11 @@ export default function CollectionPage({
         <Button type="submit">Tìm kiếm</Button>
       </form>
       <ResourceState {...resource} empty={!items.length}>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {items.map((item) => (
             <article
               key={itemKey(item)}
-              className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card"
+              className="rounded-xl border border-slate-200/80 bg-white p-4"
             >
               {renderItem(item)}
             </article>

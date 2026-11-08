@@ -9,12 +9,12 @@
   --color-brand-700: #0053c4;
   --color-ink: #102a56;
   --font-sans: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
-  --shadow-card: 0 12px 40px -16px rgb(25 73 130 / 16%);
+  --shadow-card: 0 2px 8px rgb(25 73 130 / 5%);
 }
 
 :root {
   color: #102a56;
-  background: #f7faff;
+  background: #fafbf9;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

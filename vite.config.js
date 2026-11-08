@@ -11,8 +11,12 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '127.0.0.1',
       port: 5173,
-      strictPort: true,
-      proxy: { '/api': { target: env.BACKEND_URL || 'http://localhost:5080', changeOrigin: true } },
+      proxy: Object.fromEntries(
+        ['/api', '/media'].map((path) => [
+          path,
+          { target: env.BACKEND_URL || 'http://localhost:5080', changeOrigin: true },
+        ]),
+      ),
     },
     preview: { host: '127.0.0.1', port: 4173, strictPort: true },
     build: { sourcemap: false },
