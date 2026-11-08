@@ -47,14 +47,6 @@ export default function HomePage() {
                 Tìm phòng khám
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs text-slate-500">
-              {['Dễ sử dụng', 'Đồng bộ website & app', 'Tôn trọng quyền riêng tư'].map((text) => (
-                <span key={text} className="inline-flex items-center gap-1.5">
-                  <CircleCheck size={14} className="text-brand-500" />
-                  {text}
-                </span>
-              ))}
-            </div>
           </div>
           <div
             className="relative mx-auto flex min-h-72 w-full max-w-md items-center justify-center lg:min-h-96"
