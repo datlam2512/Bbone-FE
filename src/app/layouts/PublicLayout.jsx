@@ -28,9 +28,6 @@ export default function PublicLayout() {
       >
         Bỏ qua điều hướng
       </a>
-      <div className="border-b border-brand-100 bg-brand-50 px-5 py-2 text-center text-xs text-brand-700">
-        Đồng hành cùng bạn trên hành trình chăm sóc xương khớp
-      </div>
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
           <Brand />

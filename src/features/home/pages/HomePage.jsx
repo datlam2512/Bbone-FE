@@ -23,10 +23,6 @@ export default function HomePage() {
       <section className="relative overflow-hidden rounded-[2rem] border border-brand-100 bg-gradient-to-br from-white via-brand-50 to-brand-100">
         <div className="relative z-10 grid gap-6 px-7 py-12 sm:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-brand-700">
-              <span className="size-1.5 rounded-full bg-brand-500" />
-              Chăm sóc xương khớp toàn diện
-            </span>
             <h1 className="max-w-xl text-4xl leading-[1.2] font-extrabold tracking-tight sm:text-5xl lg:text-[3.5rem]">
               Vững bước hôm nay.
               <br />
