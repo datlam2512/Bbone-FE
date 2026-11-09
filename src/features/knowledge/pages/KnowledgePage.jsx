@@ -5,7 +5,7 @@ export default function KnowledgePage() {
   return (
     <CollectionPage
       title="Kiến thức"
-      description="Hướng dẫn sử dụng các dịch vụ trên BBONE."
+      description="Tìm hiểu sức khỏe cơ xương khớp qua các tài liệu từ WHO và NIH."
       load={knowledgeApi.list}
       renderItem={(item) => <ArticleCardContent article={item} />}
     />

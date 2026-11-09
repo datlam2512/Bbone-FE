@@ -19,6 +19,12 @@ import { adminRoutes } from '@/features/admin/admin.routes'
 
 const adminLinks = [
   ['/quan-tri', 'Tổng quan', LayoutDashboard],
+  ['/quan-tri/phong-kham', 'Phòng khám', Home],
+  ['/quan-tri/dich-vu', 'Dịch vụ', CalendarDays],
+  ['/quan-tri/bao-cao', 'Báo cáo', LayoutDashboard],
+  ['/quan-tri/nhat-ky', 'Nhật ký', BookOpen],
+  ['/quan-tri/tac-vu', 'Tác vụ', Package],
+  ['/quan-tri/cau-hinh', 'Cấu hình', Home],
   ['/quan-tri/nguoi-dung', 'Người dùng', Users],
   ['/quan-tri/san-pham', 'Sản phẩm', Package],
   ['/quan-tri/don-hang', 'Đơn hàng', CalendarDays],
@@ -26,8 +32,12 @@ const adminLinks = [
   ['/quan-tri/noi-dung', 'Nội dung', BookOpen],
 ]
 const staffLinks = [
+  ['/nhan-vien/khung-gio', 'Khung giờ', CalendarDays],
   ['/nhan-vien', 'Tổng quan', LayoutDashboard],
   ['/nhan-vien/lich-kham', 'Lịch khám', CalendarDays],
+  ['/nhan-vien/ho-so', 'Hồ sơ khám', BookOpen],
+  ['/nhan-vien/dat-tai-quay', 'Đặt tại quầy', CalendarDays],
+  ['/nhan-vien/bao-cao', 'Báo cáo', LayoutDashboard],
   ['/nhan-vien/benh-nhan', 'Bệnh nhân', Users],
 ]
 
@@ -44,7 +54,13 @@ export default function WorkspaceLayout() {
           const route = adminRoutes.find((entry) => (path ? entry.path === path : entry.index))
           return route?.handle.roles.includes(userRole)
         })
-      : staffLinks
+      : staffLinks.filter(([to]) =>
+          to.endsWith('/ho-so')
+            ? userRole === 'Doctor'
+            : to.endsWith('/bao-cao') || to.endsWith('/khung-gio')
+              ? ['Admin', 'ClinicManager'].includes(userRole)
+              : true,
+        )
   return (
     <RequireSession>
       <div className="flex min-h-screen">
@@ -62,7 +78,7 @@ export default function WorkspaceLayout() {
               <NavLink
                 key={to}
                 to={to}
-                end={to === links[0][0]}
+                end={to === '/quan-tri' || to === '/nhan-vien'}
                 title={collapsed ? label : undefined}
                 className={({ isActive }) =>
                   cn(
@@ -105,7 +121,7 @@ export default function WorkspaceLayout() {
                 <NavLink
                   key={to}
                   to={to}
-                  end={to === links[0][0]}
+                  end={to === '/quan-tri' || to === '/nhan-vien'}
                   className="shrink-0 py-1 text-brand-600"
                 >
                   {label}

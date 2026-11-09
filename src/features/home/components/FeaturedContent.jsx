@@ -66,7 +66,7 @@ export default function FeaturedContent() {
       </FeaturedSection>
       <FeaturedSection
         title="Thông tin hữu ích"
-        subtitle="Hướng dẫn đặt lịch, mua sắm và quản lý tài khoản."
+        subtitle="Nguồn đọc tin cậy về sức khỏe cơ xương khớp từ WHO và NIH."
         to="/kien-thuc"
         load={loadArticles}
       >

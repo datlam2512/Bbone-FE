@@ -1,3 +1,4 @@
+import FavoriteButton from '@/shared/components/ui/FavoriteButton'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, Minus, Phone, Plus, ShoppingBag } from 'lucide-react'
@@ -14,7 +15,10 @@ export default function ProductDetailPage() {
   const quantity = purchase.productId === productId ? purchase.quantity : 1
   const added = purchase.productId === productId && purchase.added
   const setCartQuantity = useGuestCartStore((state) => state.setQuantity)
-  const loadProduct = useCallback((signal) => catalogApi.product(productId, { signal }), [productId])
+  const loadProduct = useCallback(
+    (signal) => catalogApi.product(productId, { signal }),
+    [productId],
+  )
   const resource = useResource(loadProduct)
   const product = resource.data
   const available = Number.isInteger(product?.sellableQuantity)
@@ -24,7 +28,8 @@ export default function ProductDetailPage() {
   function addToCart() {
     if (!product || available < 1) return
     const currentQuantity =
-      useGuestCartStore.getState().items.find((item) => item.productId === product.id)?.quantity || 0
+      useGuestCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ||
+      0
     setCartQuantity(product.id, Math.min(currentQuantity + quantity, available, 1000))
     setPurchase({ productId, quantity, added: true })
   }
@@ -58,6 +63,7 @@ export default function ProductDetailPage() {
               </section>
 
               <section className="flex flex-col py-1 lg:py-4">
+                <FavoriteButton kind="Product" targetId={product.id} />
                 <div className="flex flex-wrap items-center gap-2">
                   {product.brand && (
                     <span className="text-xs font-semibold tracking-wide text-brand-700 uppercase">
@@ -168,7 +174,11 @@ export default function ProductDetailPage() {
                     Tư vấn sản phẩm
                   </a>
                 </div>
-                <p role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-emerald-700">
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="mt-3 min-h-5 text-sm text-emerald-700"
+                >
                   {added ? 'Sản phẩm đã được cập nhật trong giỏ hàng của bạn.' : ''}
                 </p>
 

@@ -1,0 +1,2 @@
+/* Tailwind's reset must run before Astryx component styles. Utilities stay last. */
+@layer theme, base, reset, astryx-base, astryx-theme, components, utilities;

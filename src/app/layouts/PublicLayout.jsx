@@ -1,5 +1,6 @@
 import SiteFooter from '@/shared/components/SiteFooter'
 import { Menu, X, ArrowUpRight } from 'lucide-react'
+import CartLink from '@/features/cart/components/CartLink'
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom'
 import Brand from '@/shared/components/Brand'
 import { cn } from '@/shared/lib/cn'
@@ -52,6 +53,7 @@ export default function PublicLayout() {
             ))}
           </nav>
           <div className="flex items-center gap-3">
+            <CartLink />
             <Link
               to={user ? '/tai-khoan' : '/dang-nhap'}
               className="hidden text-sm font-semibold text-ink sm:block"

@@ -1,5 +1,5 @@
-import MediaImage from '@/shared/components/ui/MediaImage'
-import { demoMedia } from '@/shared/lib/media'
+import CareHero from '../components/CareHero'
+
 import FeaturedContent from '../components/FeaturedContent'
 import { Link } from 'react-router-dom'
 import { ArrowRight, HeartPulse, CalendarDays, MapPin, ShoppingBag, BookOpen } from 'lucide-react'
@@ -15,47 +15,7 @@ const shortcuts = [
 export default function HomePage() {
   return (
     <div className="mx-auto w-full max-w-[90rem] px-5 pt-8 lg:px-8 2xl:px-10">
-      <section className="relative bg-[#f0f4f3]">
-        <div className="grid gap-8 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14 lg:px-16 lg:py-16">
-          <div>
-            <p className="mb-5 text-xs font-semibold tracking-[0.16em] text-brand-700 uppercase">
-              Chăm sóc sức khỏe chủ động
-            </p>
-            <h1 className="max-w-xl text-4xl leading-[1.2] font-semibold tracking-tight text-ink sm:text-5xl lg:text-[3.5rem]">
-              Chăm sóc xương khớp
-              <br />
-              <span className="text-brand-700">cùng BBONE.</span>
-            </h1>
-            <p className="mt-5 max-w-lg text-base leading-8 text-slate-600">
-              Tìm phòng khám, đặt lịch và chọn sản phẩm chăm sóc xương khớp phù hợp với nhu cầu của
-              bạn.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/kiem-tra-suc-khoe"
-                className="inline-flex items-center gap-3 rounded-md bg-brand-700 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-600"
-              >
-                Kiểm tra sức khỏe <ArrowRight size={18} />
-              </Link>
-              <Link
-                to="/phong-kham"
-                className="inline-flex items-center gap-2 border-b border-ink/30 px-2 py-3.5 text-sm font-semibold text-ink transition hover:border-brand-700 hover:text-brand-700"
-              >
-                <MapPin size={17} />
-                Tìm phòng khám
-              </Link>
-            </div>
-          </div>
-          <div className="relative mx-auto w-full max-w-2xl">
-            <MediaImage
-              src={demoMedia.hero}
-              alt="Bác sĩ và người dùng trao đổi về sức khỏe"
-              priority
-              className="aspect-[4/3] rounded-md"
-            />
-          </div>
-        </div>
-      </section>
+      <CareHero />
       <section
         aria-label="Tiện ích chăm sóc sức khỏe"
         className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5"

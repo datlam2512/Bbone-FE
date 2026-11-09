@@ -8,9 +8,10 @@ export class ApiError extends Error {
   }
 }
 
-async function readBody(response) {
+async function readBody(response, responseType = 'json') {
   if (response.status === 204) return null
-  if (!response.headers.get('content-type')?.includes('json')) return null
+  if (!response.headers.get('content-type')?.includes('json'))
+    return responseType === 'text' ? response.text() : null
   return response.json()
 }
 
@@ -86,7 +87,10 @@ export function createApiClient({
     return flight.promise
   }
 
-  async function request(path, { auth = true, idempotencyKey, ...options } = {}) {
+  async function request(
+    path,
+    { auth = true, idempotencyKey, responseType = 'json', ...options } = {},
+  ) {
     const initial = getSession()
     const headers = new Headers(options.headers)
     headers.set('Accept', 'application/json')
@@ -116,7 +120,7 @@ export function createApiClient({
     if (auth && initial.sessionKey && getSession().sessionKey !== initial.sessionKey) {
       throw new ApiError('Phiên đăng nhập đã thay đổi.', { status: 401 })
     }
-    const body = await readBody(response)
+    const body = await readBody(response, responseType)
     if (!response.ok) throw responseError(response, body)
     return body
   }

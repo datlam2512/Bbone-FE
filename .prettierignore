@@ -1,4 +1,9 @@
-node_modules
 dist
+node_modules
 .cache
 package-lock.json
+src/astryx-themes.js
+src/themes/bbone/bbone.css
+src/themes/bbone/bbone.js
+src/themes/bbone/bbone.d.ts
+src/themes/bbone/*.d.ts

@@ -33,6 +33,25 @@ const json = (value, status = 200) =>
     headers: { 'Content-Type': 'application/json' },
   })
 
+test('explicit text responses support authenticated QR and CSV endpoints without leaking responseType to fetch', async () => {
+  const { client } = fixture(async (url, options) => {
+    assert.equal(options.headers.get('Authorization'), 'Bearer old-access')
+    assert.equal('responseType' in options, false)
+    return new Response('<svg></svg>', { headers: { 'Content-Type': 'image/svg+xml' } })
+  })
+  assert.equal(await client.get('/simulation/qr', { responseType: 'text' }), '<svg></svg>')
+})
+
+test('JSON errors still retain their business message for text downloads', async () => {
+  const { client } = fixture(async () =>
+    json({ detail: 'Không có quyền xuất báo cáo.', code: 'EXPORT_FORBIDDEN' }, 403),
+  )
+  await assert.rejects(
+    client.get('/report.csv', { responseType: 'text' }),
+    (error) => error.status === 403 && error.code === 'EXPORT_FORBIDDEN',
+  )
+})
+
 test('concurrent unauthorized requests share one refresh', async () => {
   let refreshCount = 0
   const { client } = fixture(async (url, options) => {

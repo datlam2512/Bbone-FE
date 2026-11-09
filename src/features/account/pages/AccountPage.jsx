@@ -40,6 +40,12 @@ export default function AccountPage() {
       </div>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {[
+          ['/tai-khoan/thong-tin', 'Thông tin cá nhân', CalendarDays],
+          ['/tai-khoan/dia-chi', 'Địa chỉ nhận hàng', Package],
+          ['/tai-khoan/yeu-thich', 'Yêu thích', Package],
+          ['/tai-khoan/thong-bao', 'Thông báo', CalendarDays],
+          ['/tai-khoan/ho-so', 'Hồ sơ khám bệnh', CalendarDays],
+          ['/tai-khoan/kiem-tra', 'Lịch sử kiểm tra', CalendarDays],
           ['/tai-khoan/lich-hen', 'Lịch hẹn của tôi', CalendarDays],
           ['/tai-khoan/don-hang', 'Đơn hàng của tôi', Package],
           ...(user.role === 'Admin' ? [['/quan-tri', 'Không gian quản trị', LayoutDashboard]] : []),

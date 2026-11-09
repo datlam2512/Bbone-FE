@@ -1,20 +1,18 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-brand-50: #eff7ff;
+@theme inline {
+  --color-brand-50: var(--color-accent-muted, #eff7ff);
   --color-brand-100: #dceeff;
   --color-brand-200: #b8ddff;
   --color-brand-500: #2687ff;
-  --color-brand-600: #0066ee;
-  --color-brand-700: #0053c4;
-  --color-ink: #102a56;
-  --font-sans: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --color-brand-600: var(--color-accent, #0066ee);
+  --color-brand-700: var(--color-text-accent, #0053c4);
+  --color-ink: var(--color-text-primary, #102a56);
+  --font-sans: var(--font-family-body, 'Segoe UI', system-ui, sans-serif);
   --shadow-card: 0 2px 8px rgb(25 73 130 / 5%);
 }
 
 :root {
-  color: #102a56;
-  background: #fafbf9;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -60,4 +58,24 @@ html {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.screening-progress {
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+.screening-progress::-webkit-progress-bar {
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-muted);
+}
+.screening-progress::-webkit-progress-value {
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+}
+.screening-progress::-moz-progress-bar {
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
 }

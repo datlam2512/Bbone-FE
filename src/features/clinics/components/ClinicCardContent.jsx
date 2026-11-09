@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { publicPhone } from '@/shared/lib/contact'
 import { MapPin, Star } from 'lucide-react'
 import MediaImage from '@/shared/components/ui/MediaImage'
 
@@ -11,7 +13,11 @@ export default function ClinicCardContent({ item }) {
         className="mb-5 aspect-[16/10]"
       />
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-semibold">{clinic.name}</h2>
+        <h2 className="text-lg font-semibold">
+          <Link to={'/phong-kham/' + clinic.id} className="hover:text-brand-600">
+            {clinic.name}
+          </Link>
+        </h2>
         {rating != null && (
           <span className="inline-flex items-center gap-1 text-sm text-amber-600">
             <Star size={15} />
@@ -23,7 +29,9 @@ export default function ClinicCardContent({ item }) {
         <MapPin size={17} className="mt-1 shrink-0" />
         {clinic.address}
       </p>
-      <p className="mt-3 text-sm text-brand-600">{clinic.phone}</p>
+      {publicPhone(clinic.phone) && (
+        <p className="mt-3 text-sm text-brand-600">{publicPhone(clinic.phone)}</p>
+      )}
     </>
   )
 }
