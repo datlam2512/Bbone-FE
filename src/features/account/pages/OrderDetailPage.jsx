@@ -1,10 +1,14 @@
+import { VStack } from '@astryxdesign/core/VStack'
+import { HStack } from '@astryxdesign/core/HStack'
+import { ArrowLeft, QrCode, Clock3 } from 'lucide-react'
+import OrderSummary from '../components/OrderSummary'
 import OrderRefundPanel from '../components/OrderRefundPanel'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import OrderPaymentPanel from '../components/OrderPaymentPanel'
 import { Button } from '@astryxdesign/core/Button'
 import { api } from '@/shared/api/client'
-import { Page, Panel, Feedback, Field, Submit, Status } from '@/shared/components/ui/Workflow'
+import { Panel, Feedback, Field, Submit, Status } from '@/shared/components/ui/Workflow'
 import ResourceState from '@/shared/components/ui/ResourceState'
 import { useResource } from '@/shared/hooks/use-resource'
 import { useCommand } from '@/shared/hooks/use-command'
@@ -41,131 +45,211 @@ export default function OrderDetailPage() {
     )
     if (ok) resource.retry()
   }
+  const payments = data?.payments || []
+  const activePayment =
+    payments.find((payment) => payment.status === 'Pending') ||
+    payments.find((payment) => ['Paid', 'Refunded', 'PartiallyRefunded'].includes(payment.status))
+  const pastPayments = payments.filter((payment) => payment.id !== activePayment?.id)
+  const canCancel =
+    order &&
+    !order.cancellationPending &&
+    ['PendingPayment', 'PendingConfirmation'].includes(order.status)
   return (
-    <Page title={order?.code || 'Chi tiết đơn hàng'} back="/tai-khoan/don-hang">
-      <Feedback command={command} />
-      <ResourceState {...resource} empty={!data}>
-        {data && (
-          <>
-            <section className="grid gap-6 lg:grid-cols-2">
-              <Panel title="Thông tin đơn hàng">
-                <Status value={order.status} />
-                <p className="text-sm text-slate-500">Đặt ngày {dateTime(order.createdAt)}</p>
-                {data.lines.map((line) => (
-                  <p
-                    key={line.id}
-                    className="flex justify-between gap-5 border-b border-slate-100 py-3 text-sm"
-                  >
-                    {line.name} × {line.quantity}
-                    <strong className="shrink-0">
-                      {formatMoney(line.unitPrice * line.quantity)}
-                    </strong>
+    <section className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900 lg:px-8">
+      <VStack gap={6} className="mx-auto w-full max-w-7xl">
+        <Link
+          to="/tai-khoan/don-hang"
+          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-500 hover:text-brand-700"
+        >
+          <ArrowLeft size={16} />
+          Đơn hàng của tôi
+        </Link>
+        <ResourceState {...resource} empty={!data}>
+          {data && (
+            <>
+              <header className="flex flex-wrap items-center justify-between gap-4">
+                <VStack gap={2}>
+                  <p className="text-xs font-semibold tracking-widest text-brand-700">
+                    BBONE · ĐƠN HÀNG
                   </p>
-                ))}
-                <p className="flex justify-between font-semibold">
-                  Tổng thanh toán<strong>{formatMoney(order.total)}</strong>
-                </p>
-                <p className="text-sm">
-                  {order.method} · <Status value={order.paymentStatus} />
-                </p>
-              </Panel>
-              <Panel title="Địa chỉ nhận hàng">
-                <h3 className="font-semibold">{order.recipient}</h3>
-                <p className="text-sm">{order.phone}</p>
-                <p className="text-sm leading-7 text-slate-500">{order.address}</p>
-                {data.shipments.map((s) => (
-                  <section key={s.id} className="space-y-2 border-t border-slate-200 pt-4">
-                    <Status value={s.status} />
-                    <p className="text-sm">
-                      {s.carrier} · {s.trackingCode}
-                    </p>
-                    <Link
-                      to={'/tai-khoan/giao-hang/' + s.id}
-                      className="text-sm font-semibold text-brand-600"
+                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                    {order.status === 'PendingPayment'
+                      ? 'Hoàn tất thanh toán'
+                      : 'Chi tiết đơn hàng'}
+                  </h1>
+                  <p className="text-sm text-slate-500">
+                    {order.code} · {dateTime(order.createdAt)}
+                  </p>
+                </VStack>
+                <VStack gap={2} className="items-start sm:items-end">
+                  <Status value={order.cancellationPending ? 'Chờ duyệt hủy' : order.status} />
+                  <p className="text-xs text-slate-500">
+                    {order.method === 'COD' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản VietQR'}
+                  </p>
+                </VStack>
+              </header>
+              <Feedback command={command} />
+              <section className="grid items-start gap-6 lg:grid-cols-3">
+                <VStack gap={5} className="min-w-0 lg:col-span-2">
+                  {activePayment ? (
+                    <OrderPaymentPanel
+                      key={activePayment.id}
+                      payment={activePayment}
+                      refresh={resource.retry}
+                      beneficiary={data.beneficiary}
+                      canPay={order.status === 'PendingPayment' && !order.cancellationPending}
+                    />
+                  ) : (
+                    <Panel
+                      title={
+                        order.method === 'COD' ? 'Thanh toán khi nhận hàng' : 'Thanh toán đơn hàng'
+                      }
                     >
-                      Theo dõi giao hàng →
-                    </Link>
-                  </section>
-                ))}
-              </Panel>
-            </section>
-            {order.status === 'PendingPayment' && (
-              <Button
-                label="Tạo / kiểm tra mã thanh toán"
-                variant="primary"
-                isLoading={command.pending}
-                onClick={pay}
-              />
-            )}{' '}
-            {order.status === 'Cancelled' &&
-              ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) &&
-              !order.cancellationRequestedAt && (
-                <Panel title="Cần đối soát hoàn tiền">
-                  <p className="text-sm leading-7">
-                    Đơn này đã hủy nhưng giao dịch vẫn ghi nhận tiền đã thu. Trạng thái hủy không
-                    đồng nghĩa đã hoàn tiền. Bộ phận phụ trách cần kiểm tra giao dịch và yêu cầu
-                    hoàn tiền.
-                  </p>
-                </Panel>
-              )}
-            {order.cancellationRequestedAt && (
-              <Panel
-                title={
-                  order.cancellationPending
-                    ? 'Yêu cầu hủy đang chờ người bán duyệt'
-                    : 'Thông tin yêu cầu hủy'
-                }
-              >
-                <p className="text-sm">Lý do: {order.cancellationReason}</p>
-                {order.cancellationDecisionReason && (
-                  <p className="text-sm">Phản hồi người bán: {order.cancellationDecisionReason}</p>
-                )}
-                {order.status === 'Cancelled' &&
-                  ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) && (
-                    <p className="text-sm">
-                      Đã hủy đơn. Tiền chưa được hoàn xong; theo dõi trạng thái hoàn tiền bên dưới.
-                    </p>
+                      <p className="text-sm leading-7 text-slate-600">
+                        {order.method === 'COD'
+                          ? 'Bạn thanh toán cho đơn vị giao hàng khi nhận được đơn. Theo dõi xác nhận của người bán trong tài khoản.'
+                          : 'Tạo mã QR riêng cho đơn này để chuyển đúng số tiền và nội dung.'}
+                      </p>
+                      {order.status === 'PendingPayment' && (
+                        <Button
+                          label="Tạo mã QR thanh toán"
+                          icon={<QrCode size={18} />}
+                          variant="primary"
+                          isLoading={command.pending}
+                          onClick={pay}
+                        />
+                      )}
+                    </Panel>
                   )}
-              </Panel>
-            )}
-            {(data.refunds || []).map((refund) => (
-              <OrderRefundPanel
-                key={refund.id}
-                refund={refund}
-                payment={data.payments.find((payment) => payment.id === refund.paymentId)}
-                refresh={resource.retry}
-              />
-            ))}
-            {data.payments.map((p) => (
-              <OrderPaymentPanel
-                key={p.id}
-                payment={p}
-                refresh={resource.retry}
-                beneficiary={data.beneficiary}
-                canPay={order.status === 'PendingPayment' && !order.cancellationPending}
-              />
-            ))}
-            {!order.cancellationPending &&
-              ['PendingPayment', 'PendingConfirmation'].includes(order.status) && (
-                <Button label="Yêu cầu hủy đơn" onClick={() => setCancel(!cancel)} />
-              )}{' '}
-            {cancel && (
-              <Panel title="Hủy đơn hàng">
-                <form onSubmit={cancelOrder} className="space-y-4">
-                  <Field
-                    label="Lý do hủy"
-                    name="reason"
-                    type="textarea"
-                    maxLength={1000}
-                    required
-                  />
-                  <Submit command={command} label="Gửi yêu cầu hủy" />
-                </form>
-              </Panel>
-            )}
-          </>
-        )}
-      </ResourceState>
-    </Page>
+
+                  {order.status === 'PendingConfirmation' && (
+                    <section className="flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4">
+                      <Clock3 size={21} className="shrink-0 text-brand-700" />
+                      <p className="text-sm leading-7 text-slate-700">
+                        Đơn đang chờ người bán xác nhận. Thanh toán và xác nhận đơn là hai bước
+                        riêng.
+                      </p>
+                    </section>
+                  )}
+                  {order.cancellationRequestedAt && (
+                    <Panel
+                      title={
+                        order.cancellationPending
+                          ? 'Yêu cầu hủy đang chờ duyệt'
+                          : 'Thông tin yêu cầu hủy'
+                      }
+                    >
+                      <p className="text-sm leading-7">Lý do: {order.cancellationReason}</p>
+                      {order.cancellationDecisionReason && (
+                        <p className="text-sm leading-7">
+                          Phản hồi: {order.cancellationDecisionReason}
+                        </p>
+                      )}
+                    </Panel>
+                  )}
+                  {order.status === 'Cancelled' &&
+                    ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) && (
+                      <section className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm leading-7 text-orange-900">
+                        Đơn đã hủy, nhưng tiền chưa được hoàn tất. Theo dõi yêu cầu hoàn tiền bên
+                        dưới; trạng thái hủy không đồng nghĩa đã hoàn tiền.
+                      </section>
+                    )}
+                  {(data.refunds || []).map((refund) => (
+                    <OrderRefundPanel
+                      key={refund.id}
+                      refund={refund}
+                      payment={payments.find((payment) => payment.id === refund.paymentId)}
+                      refresh={resource.retry}
+                    />
+                  ))}
+                  {data.shipments.length > 0 && (
+                    <Panel title="Theo dõi giao hàng">
+                      {data.shipments.map((shipment) => (
+                        <section
+                          key={shipment.id}
+                          className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 last:border-0"
+                        >
+                          <VStack gap={2}>
+                            <Status value={shipment.status} />
+                            <p className="text-sm text-slate-500">
+                              {shipment.carrier} · {shipment.trackingCode}
+                            </p>
+                          </VStack>
+                          <Link
+                            to={'/tai-khoan/giao-hang/' + shipment.id}
+                            className="text-sm font-semibold text-brand-700"
+                          >
+                            Xem hành trình →
+                          </Link>
+                        </section>
+                      ))}
+                    </Panel>
+                  )}
+                  {pastPayments.length > 0 && (
+                    <details className="rounded-xl border border-slate-200 bg-white p-5">
+                      <summary className="cursor-pointer text-sm font-semibold">
+                        Lịch sử giao dịch trước ({pastPayments.length})
+                      </summary>
+                      <VStack gap={4} className="mt-4">
+                        {pastPayments.map((payment) => (
+                          <section
+                            key={payment.id}
+                            className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3"
+                          >
+                            <p className="text-sm text-slate-500">{dateTime(payment.createdAt)}</p>
+                            <strong className="text-sm">{formatMoney(payment.amount)}</strong>
+                            <Status value={payment.status} />
+                          </section>
+                        ))}
+                      </VStack>
+                    </details>
+                  )}
+                  {canCancel && (
+                    <section className="space-y-4 border-t border-slate-200 pt-5">
+                      <HStack gap={3} hAlign="between" wrap="wrap">
+                        <p className="text-xs leading-6 text-slate-500">Cần hỗ trợ với đơn này?</p>
+                        <HStack gap={4}>
+                          <Link to="/lien-he" className="text-sm font-semibold text-brand-700">
+                            Liên hệ
+                          </Link>
+                          <Button
+                            label={cancel ? 'Đóng yêu cầu' : 'Yêu cầu hủy đơn'}
+                            variant="ghost"
+                            onClick={() => setCancel(!cancel)}
+                          />
+                        </HStack>
+                      </HStack>
+                      {cancel && (
+                        <Panel title="Gửi yêu cầu hủy">
+                          <form onSubmit={cancelOrder} className="space-y-4">
+                            <p className="text-sm leading-7 text-slate-600">
+                              Chỉ áp dụng trước khi người bán xác nhận. Nếu đã thanh toán, yêu cầu
+                              hủy và hoàn tiền được xử lý riêng.
+                            </p>
+                            <Field
+                              label="Lý do hủy"
+                              name="reason"
+                              type="textarea"
+                              required
+                              maxLength={1000}
+                            />
+                            <label className="flex gap-2 text-sm leading-6">
+                              <input type="checkbox" required />
+                              Tôi đã kiểm tra thông tin và muốn gửi yêu cầu hủy.
+                            </label>
+                            <Submit command={command} label="Gửi yêu cầu hủy" />
+                          </form>
+                        </Panel>
+                      )}
+                    </section>
+                  )}
+                </VStack>
+                <OrderSummary order={order} lines={data.lines} />
+              </section>
+            </>
+          )}
+        </ResourceState>
+      </VStack>
+    </section>
   )
 }

@@ -166,13 +166,13 @@ export default function ProductDetailPage() {
                     {added ? <Check size={18} /> : <ShoppingBag size={18} />}
                     {added ? 'Đã thêm vào giỏ' : 'Thêm vào giỏ hàng'}
                   </button>
-                  <a
-                    href="tel:0912345678"
+                  <Link
+                    to="/lien-he"
                     className="inline-flex min-h-12 items-center justify-center gap-2 border border-slate-300 px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-700 hover:text-brand-700"
                   >
                     <Phone size={17} />
-                    Tư vấn sản phẩm
-                  </a>
+                    Liên hệ tư vấn
+                  </Link>
                 </div>
                 <p
                   role="status"

@@ -1,4 +1,7 @@
 import { useCallback, useState } from 'react'
+import { ShoppingBag, Users, Wallet, RotateCcw, ArrowUpRight } from 'lucide-react'
+import DataTable from '@/shared/components/ui/DataTable'
+import { itemsOf } from '@/shared/lib/workflows'
 import { Link } from 'react-router-dom'
 import { api } from '@/shared/api/client'
 import { Page, Panel, Field, Status } from '@/shared/components/ui/Workflow'
@@ -22,6 +25,20 @@ export default function AdminDashboardPage() {
           ? api.get('/admin/dashboard?' + query, { signal })
           : Promise.resolve(null),
       [query, role],
+    ),
+  )
+  const work = useResource(
+    useCallback(
+      async (signal) => {
+        if (!['Admin', 'Finance'].includes(role)) return null
+        const [pending, cancellations, recent] = await Promise.all([
+          api.get('/admin/orders?status=PendingConfirmation&size=1', { signal }),
+          api.get('/admin/orders?cancellationPending=true&size=1', { signal }),
+          api.get('/admin/orders?size=5', { signal }),
+        ])
+        return { pending, cancellations, recent }
+      },
+      [role],
     ),
   )
   const data = resource.data
@@ -64,18 +81,88 @@ export default function AdminDashboardPage() {
           <>
             <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                ['Khách hàng', data.users],
-                ['Đơn hàng', data.orders],
-                ['Đã thu', data.collected != null ? formatMoney(data.collected) : null],
-                ['Hoàn tiền', data.refunded != null ? formatMoney(data.refunded) : null],
+                ['Khách hàng', data.users, Users],
+                ['Đơn hàng', data.orders, ShoppingBag],
+                ['Đã thu', data.collected != null ? formatMoney(data.collected) : null, Wallet],
+                ['Hoàn tiền', data.refunded != null ? formatMoney(data.refunded) : null, RotateCcw],
               ]
                 .filter(([, value]) => value != null)
-                .map(([label, value]) => (
-                  <Panel key={label} title={label}>
+                .map(([label, value, Icon]) => (
+                  <Panel key={label}>
+                    <section className="flex items-center justify-between gap-3">
+                      <h2 className="text-sm font-medium text-slate-500">{label}</h2>
+                      <Icon size={20} className="text-brand-600" />
+                    </section>
                     <p className="text-3xl font-semibold tracking-tight">{value}</p>
                   </Panel>
                 ))}
             </section>
+            <ResourceState {...work} empty={!work.data}>
+              {work.data && (
+                <>
+                  <section className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      ['Đơn chờ xác nhận', work.data.pending.total, 'PendingConfirmation'],
+                      [
+                        'Yêu cầu hủy cần xử lý',
+                        work.data.cancellations.total,
+                        'CancellationPending',
+                      ],
+                    ].map(([label, count, status]) => (
+                      <Link
+                        key={status}
+                        to={'/quan-tri/don-hang?status=' + status}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50 p-5 text-brand-900"
+                      >
+                        <section>
+                          <p className="text-sm font-medium">{label}</p>
+                          <p className="mt-2 text-2xl font-bold">{count}</p>
+                        </section>
+                        <ArrowUpRight size={21} />
+                      </Link>
+                    ))}
+                  </section>
+                  <section className="space-y-4">
+                    <header className="flex items-center justify-between gap-3">
+                      <h2 className="text-lg font-semibold">Đơn hàng gần đây</h2>
+                      <Link
+                        to="/quan-tri/don-hang"
+                        className="text-sm font-semibold text-brand-700"
+                      >
+                        Xem tất cả →
+                      </Link>
+                    </header>
+                    <DataTable
+                      rows={itemsOf(work.data.recent)}
+                      columns={[
+                        {
+                          label: 'Mã đơn',
+                          render: (row) => (
+                            <Link
+                              className="font-semibold text-brand-700"
+                              to={'/quan-tri/don-hang?order=' + row.id}
+                            >
+                              {row.code}
+                            </Link>
+                          ),
+                        },
+                        { label: 'Khách hàng', key: 'recipient' },
+                        { label: 'Đặt lúc', render: (row) => dateTime(row.createdAt) },
+                        { label: 'Tổng tiền', render: (row) => formatMoney(row.total) },
+                        {
+                          label: 'Trạng thái',
+                          render: (row) => (
+                            <Status
+                              value={row.cancellationPending ? 'Chờ duyệt hủy' : row.status}
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                  </section>
+                </>
+              )}
+            </ResourceState>
             <section className="grid gap-6 lg:grid-cols-2">
               <Panel title="Lịch khám theo trạng thái">
                 {data.appointments.map((row) => (

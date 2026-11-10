@@ -1,5 +1,6 @@
 export const adminRoles = ['Admin', 'Commerce', 'Finance', 'Editor', 'Reviewer']
 export const adminRoutes = [
+  { path: 'khuyen-mai', handle: { title: 'Mã giảm giá', roles: ['Admin', 'Commerce'] } },
   { path: 'hoan-tien', handle: { title: 'Hoàn tiền', roles: ['Admin', 'Finance'] } },
   { index: true, handle: { title: 'Tổng quan quản trị', roles: adminRoles } },
   { path: 'phong-kham', handle: { title: 'Phòng khám', roles: ['Admin'] } },
@@ -14,6 +15,8 @@ export const adminRoutes = [
     path: 'don-hang',
     handle: { title: 'Quản lý đơn hàng', roles: ['Admin', 'Commerce', 'Finance'] },
   },
+  { path: 'tra-hang', handle: { title: 'Quản lý trả hàng', roles: ['Admin', 'Commerce'] } },
+  { path: 'kho-hang', handle: { title: 'Kho theo lô', roles: ['Admin', 'Commerce'] } },
   { path: 'giao-hang', handle: { title: 'Quản lý giao hàng', roles: ['Admin', 'Commerce'] } },
   {
     path: 'noi-dung',

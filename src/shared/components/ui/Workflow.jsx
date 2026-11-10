@@ -31,7 +31,10 @@ export function Panel({ title, children, className = '' }) {
     <VStack
       as="section"
       gap={4}
-      className={'rounded-xl border border-slate-200 bg-white p-5 sm:p-6 ' + className}
+      className={
+        'rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-sm sm:p-6 ' +
+        className
+      }
     >
       {title && <h2 className="text-lg font-semibold">{title}</h2>}
       {children}

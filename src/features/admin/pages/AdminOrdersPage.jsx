@@ -1,5 +1,6 @@
 import BankReceiptForm from '../components/BankReceiptForm'
 import { useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
 import { Button } from '@astryxdesign/core/Button'
@@ -23,9 +24,10 @@ const transitions = {
   Returning: ['Returned'],
 }
 export default function AdminOrdersPage({ shipments = false }) {
+  const [params] = useSearchParams()
   const [page, setPage] = useState(1),
-    [status, setStatus] = useState(''),
-    [selected, setSelected] = useState(null),
+    [status, setStatus] = useState(() => params.get('status') || ''),
+    [selected, setSelected] = useState(() => params.get('order')),
     [creating, setCreating] = useState(false)
   const role = useAuthStore((s) => s.user?.role),
     base = shipments ? 'shipments' : 'orders',
