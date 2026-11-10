@@ -210,7 +210,7 @@ export default function OrderDetailPage() {
                       <HStack gap={3} hAlign="between" wrap="wrap">
                         <p className="text-xs leading-6 text-slate-500">Cần hỗ trợ với đơn này?</p>
                         <HStack gap={4}>
-                          <Link to="/lien-he" className="text-sm font-semibold text-brand-700">
+                          <Link to="/lien-he" className="text-sm font-semibold text-brand-700 mt-1.5">
                             Liên hệ
                           </Link>
                           <Button
