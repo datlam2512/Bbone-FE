@@ -178,6 +178,10 @@ export const router = createBrowserRouter([
         children: staffRoutes.map((route) => ({
           ...route,
           lazy: async () => {
+            if (route.path === 'noi-dung') {
+              const { default: Page } = await import('@/features/admin/pages/AdminCatalogPage')
+              return { Component: () => <Page kind="articles" /> }
+            }
             if (route.path === 'khung-gio')
               return { Component: (await import('@/features/staff/pages/SchedulePage')).default }
             if (route.path === 'ho-so')

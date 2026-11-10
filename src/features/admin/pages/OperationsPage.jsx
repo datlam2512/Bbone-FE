@@ -1,13 +1,13 @@
+import RuntimePolicyForm from '../components/RuntimePolicyForm'
 import { useCallback, useState } from 'react'
 import { Button } from '@astryxdesign/core/Button'
 import { api } from '@/shared/api/client'
 import { useResource } from '@/shared/hooks/use-resource'
 import { useCommand } from '@/shared/hooks/use-command'
-import { Page, Panel, Feedback, Status } from '@/shared/components/ui/Workflow'
+import { Page, Feedback, Status } from '@/shared/components/ui/Workflow'
 import DataTable from '@/shared/components/ui/DataTable'
 import ResourceState from '@/shared/components/ui/ResourceState'
 import { itemsOf, dateTime } from '@/shared/lib/workflows'
-import { formatMoney } from '@/shared/lib/format'
 export default function OperationsPage({ mode = 'audit' }) {
   const [page, setPage] = useState(1),
     command = useCommand()
@@ -47,24 +47,7 @@ export default function OperationsPage({ mode = 'audit' }) {
         empty={mode === 'runtime-policy' ? !resource.data : !itemsOf(resource.data).length}
       >
         {mode === 'runtime-policy' ? (
-          <Panel title="Chính sách hiện hành">
-            <dl className="grid gap-5 sm:grid-cols-2">
-              {[
-                ['Thời hạn giữ lịch', resource.data?.holdMinutes + ' phút'],
-                ['Thời hạn thanh toán', resource.data?.paymentMinutes + ' phút'],
-                [
-                  'Giới hạn hủy lịch trước giờ khám',
-                  resource.data?.cancellationCutoffHours + ' giờ',
-                ],
-                ['Phí giao hàng', formatMoney(resource.data?.shippingFee || 0)],
-              ].map(([label, value]) => (
-                <section key={label}>
-                  <dt className="text-sm text-slate-500">{label}</dt>
-                  <dd className="mt-2 font-semibold">{value}</dd>
-                </section>
-              ))}
-            </dl>
-          </Panel>
+          resource.data && <RuntimePolicyForm policy={resource.data} onSaved={resource.retry} />
         ) : (
           <DataTable
             rows={itemsOf(resource.data)}

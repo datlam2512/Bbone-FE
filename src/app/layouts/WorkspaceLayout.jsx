@@ -32,6 +32,7 @@ const adminLinks = [
   ['/quan-tri/noi-dung', 'Nội dung', BookOpen],
 ]
 const staffLinks = [
+  ['/nhan-vien/noi-dung', 'Duyệt nội dung', BookOpen],
   ['/nhan-vien/khung-gio', 'Khung giờ', CalendarDays],
   ['/nhan-vien', 'Tổng quan', LayoutDashboard],
   ['/nhan-vien/lich-kham', 'Lịch khám', CalendarDays],
@@ -55,7 +56,7 @@ export default function WorkspaceLayout() {
           return route?.handle.roles.includes(userRole)
         })
       : staffLinks.filter(([to]) =>
-          to.endsWith('/ho-so')
+          to.endsWith('/ho-so') || to.endsWith('/noi-dung')
             ? userRole === 'Doctor'
             : to.endsWith('/bao-cao') || to.endsWith('/khung-gio')
               ? ['Admin', 'ClinicManager'].includes(userRole)

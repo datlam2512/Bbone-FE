@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { HStack } from '@astryxdesign/core/HStack'
+import OrderPaymentPanel from '../components/OrderPaymentPanel'
 import { Button } from '@astryxdesign/core/Button'
 import { api } from '@/shared/api/client'
 import { Page, Panel, Feedback, Field, Submit, Status } from '@/shared/components/ui/Workflow'
@@ -10,72 +10,6 @@ import { useCommand } from '@/shared/hooks/use-command'
 import { dateTime } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
 
-function Payment({ payment, refresh }) {
-  const command = useCommand()
-  const qr = useResource(
-    useCallback(
-      (signal) =>
-        payment.isSimulation
-          ? api.get('/simulation/payments/' + payment.id + '/qr.svg', {
-              signal,
-              responseType: 'text',
-            })
-          : Promise.resolve(null),
-      [payment.id, payment.isSimulation],
-    ),
-  )
-  async function settle(success) {
-    const body = { success }
-    const ok = await command.run(
-      () => api.post('/simulation/payments/' + payment.id + '/settle', body),
-      { id: payment.id, ...body },
-      success ? 'Đã ghi nhận thanh toán mô phỏng.' : 'Đã ghi nhận giao dịch mô phỏng thất bại.',
-    )
-    if (ok) refresh()
-  }
-  return (
-    <Panel title="Thanh toán VietQR">
-      <Feedback command={command} />
-      <Status value={payment.status} />
-      <p className="font-semibold">{formatMoney(payment.amount)}</p>
-      {payment.isSimulation && (
-        <>
-          <p className="text-sm text-slate-500">
-            Đây là giao dịch mô phỏng, không chuyển tiền thật.
-          </p>
-          {payment.status === 'Pending' && (
-            <>
-              <ResourceState {...qr} empty={false}>
-                {typeof qr.data === 'string' && (
-                  <img
-                    src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr.data)}
-                    alt="Mã QR thanh toán mô phỏng"
-                    width="240"
-                    height="240"
-                    className="max-w-full self-center"
-                  />
-                )}
-              </ResourceState>
-              <HStack gap={3} wrap="wrap">
-                <Button
-                  label="Mô phỏng thanh toán thành công"
-                  variant="primary"
-                  isLoading={command.pending}
-                  onClick={() => settle(true)}
-                />
-                <Button
-                  label="Mô phỏng thất bại"
-                  isDisabled={command.pending}
-                  onClick={() => settle(false)}
-                />
-              </HStack>
-            </>
-          )}
-        </>
-      )}
-    </Panel>
-  )
-}
 export default function OrderDetailPage() {
   const { id } = useParams(),
     [cancel, setCancel] = useState(false)
@@ -89,7 +23,9 @@ export default function OrderDetailPage() {
     const ok = await command.run(
       (key) => api.post('/orders/' + id + '/cancel', body, { idempotencyKey: key }),
       body,
-      order.status === 'PendingPayment' ? 'Đã hủy đơn chưa thanh toán.' : 'Đã gửi yêu cầu hủy. Vui lòng chờ người bán duyệt.',
+      order.status === 'PendingPayment'
+        ? 'Đã hủy đơn chưa thanh toán.'
+        : 'Đã gửi yêu cầu hủy. Vui lòng chờ người bán duyệt.',
     )
     if (ok) {
       setCancel(false)
@@ -160,20 +96,50 @@ export default function OrderDetailPage() {
                 onClick={pay}
               />
             )}{' '}
+            {order.status === 'Cancelled' &&
+              ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) &&
+              !order.cancellationRequestedAt && (
+                <Panel title="Cần đối soát hoàn tiền">
+                  <p className="text-sm leading-7">
+                    Đơn này đã hủy nhưng giao dịch vẫn ghi nhận tiền đã thu. Trạng thái hủy không
+                    đồng nghĩa đã hoàn tiền. Bộ phận phụ trách cần kiểm tra giao dịch và yêu cầu
+                    hoàn tiền.
+                  </p>
+                </Panel>
+              )}
             {order.cancellationRequestedAt && (
-              <Panel title={order.cancellationPending ? 'Yêu cầu hủy đang chờ người bán duyệt' : 'Thông tin yêu cầu hủy'}>
+              <Panel
+                title={
+                  order.cancellationPending
+                    ? 'Yêu cầu hủy đang chờ người bán duyệt'
+                    : 'Thông tin yêu cầu hủy'
+                }
+              >
                 <p className="text-sm">Lý do: {order.cancellationReason}</p>
-                {order.cancellationDecisionReason && <p className="text-sm">Phản hồi người bán: {order.cancellationDecisionReason}</p>}
-                {order.status === 'Cancelled' && ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) && <p className="text-sm">Đã hủy đơn. Tiền chưa được hoàn xong; theo dõi trạng thái hoàn tiền bên dưới.</p>}
+                {order.cancellationDecisionReason && (
+                  <p className="text-sm">Phản hồi người bán: {order.cancellationDecisionReason}</p>
+                )}
+                {order.status === 'Cancelled' &&
+                  ['Paid', 'PartiallyRefunded'].includes(order.paymentStatus) && (
+                    <p className="text-sm">
+                      Đã hủy đơn. Tiền chưa được hoàn xong; theo dõi trạng thái hoàn tiền bên dưới.
+                    </p>
+                  )}
               </Panel>
             )}
-            {(data.refunds || []).map((refund) => <Panel key={refund.id} title="Hoàn tiền"><Status value={refund.status} /><p>{formatMoney(refund.amount)}</p></Panel>)}
-            {data.payments.map((p) => (
-              <Payment key={p.id} payment={p} refresh={resource.retry} />
+            {(data.refunds || []).map((refund) => (
+              <Panel key={refund.id} title="Hoàn tiền">
+                <Status value={refund.status} />
+                <p>{formatMoney(refund.amount)}</p>
+              </Panel>
             ))}
-            {!order.cancellationPending && ['PendingPayment', 'Confirmed', 'Processing'].includes(order.status) && (
-              <Button label="Yêu cầu hủy đơn" onClick={() => setCancel(!cancel)} />
-            )}{' '}
+            {data.payments.map((p) => (
+              <OrderPaymentPanel key={p.id} payment={p} refresh={resource.retry} />
+            ))}
+            {!order.cancellationPending &&
+              ['PendingPayment', 'Confirmed', 'Processing'].includes(order.status) && (
+                <Button label="Yêu cầu hủy đơn" onClick={() => setCancel(!cancel)} />
+              )}{' '}
             {cancel && (
               <Panel title="Hủy đơn hàng">
                 <form onSubmit={cancelOrder} className="space-y-4">

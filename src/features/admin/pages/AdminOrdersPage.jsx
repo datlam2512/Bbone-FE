@@ -33,7 +33,16 @@ export default function AdminOrdersPage({ shipments = false }) {
     useCallback(
       (signal) =>
         api.get(
-          '/admin/' + base + '?page=' + page + '&size=20' + (status ? '&status=' + status : ''),
+          '/admin/' +
+            base +
+            '?page=' +
+            page +
+            '&size=20' +
+            (status === 'CancellationPending'
+              ? '&cancellationPending=true'
+              : status
+                ? '&status=' + status
+                : ''),
           { signal },
         ),
       [base, page, status],
@@ -80,9 +89,23 @@ export default function AdminOrdersPage({ shipments = false }) {
   async function decideCancellation(e) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
-    const body = { version: detail.data.order.version, approve: f.get('decision') === 'approve', reason: f.get('reason') }
-    const ok = await command.run((key) => api.post('/admin/orders/' + selected + '/cancellation-decision', body, { idempotencyKey: key }), { id: selected, ...body }, 'Đã xử lý yêu cầu hủy.')
-    if (ok) { resource.retry(); detail.retry() }
+    const body = {
+      version: detail.data.order.version,
+      approve: f.get('decision') === 'approve',
+      reason: f.get('reason'),
+    }
+    const ok = await command.run(
+      (key) =>
+        api.post('/admin/orders/' + selected + '/cancellation-decision', body, {
+          idempotencyKey: key,
+        }),
+      { id: selected, ...body },
+      'Đã xử lý yêu cầu hủy.',
+    )
+    if (ok) {
+      resource.retry()
+      detail.retry()
+    }
   }
   async function update(e) {
     e.preventDefault()
@@ -113,7 +136,9 @@ export default function AdminOrdersPage({ shipments = false }) {
   const row = shipments ? detail.data?.shipment : detail.data?.order
   const actions = shipments
     ? transitions[row?.status] || []
-    : !row?.cancellationPending && row?.status === 'Confirmed' && ['Admin', 'Commerce'].includes(role)
+    : !row?.cancellationPending &&
+        row?.status === 'Confirmed' &&
+        ['Admin', 'Commerce'].includes(role)
       ? ['process']
       : row?.status === 'Delivered' && ['Admin', 'Commerce'].includes(role)
         ? ['complete']
@@ -157,6 +182,7 @@ export default function AdminOrdersPage({ shipments = false }) {
               'Cancelled',
             ]
           : [
+              'CancellationPending',
               'PendingPayment',
               'Confirmed',
               'Processing',
@@ -243,12 +269,27 @@ export default function AdminOrdersPage({ shipments = false }) {
                 {!shipments && row.cancellationPending && (
                   <Panel title="Yêu cầu hủy chờ duyệt">
                     <p className="text-sm">Lý do khách hàng: {row.cancellationReason}</p>
-                    <p className="text-sm">Duyệt hủy sẽ dừng giao hàng. Đơn đã thanh toán sẽ tạo yêu cầu hoàn tiền riêng cho tài chính.</p>
-                    {['Admin', 'Commerce'].includes(role) && <form onSubmit={decideCancellation} className="space-y-4">
-                      <Field label="Quyết định" name="decision" type="select" required><option value="">Chọn quyết định</option><option value="approve">Duyệt hủy</option><option value="reject">Từ chối hủy</option></Field>
-                      <Field label="Lý do phản hồi" name="reason" type="textarea" required maxLength={1000} />
-                      <Submit command={command} label="Xác nhận quyết định" />
-                    </form>}
+                    <p className="text-sm">
+                      Duyệt hủy sẽ dừng giao hàng. Đơn đã thanh toán sẽ tạo yêu cầu hoàn tiền riêng
+                      cho tài chính.
+                    </p>
+                    {['Admin', 'Commerce'].includes(role) && (
+                      <form onSubmit={decideCancellation} className="space-y-4">
+                        <Field label="Quyết định" name="decision" type="select" required>
+                          <option value="">Chọn quyết định</option>
+                          <option value="approve">Duyệt hủy</option>
+                          <option value="reject">Từ chối hủy</option>
+                        </Field>
+                        <Field
+                          label="Lý do phản hồi"
+                          name="reason"
+                          type="textarea"
+                          required
+                          maxLength={1000}
+                        />
+                        <Submit command={command} label="Xác nhận quyết định" />
+                      </form>
+                    )}
                   </Panel>
                 )}
                 {(actions.length > 0 ||
@@ -322,7 +363,11 @@ export default function AdminOrdersPage({ shipments = false }) {
             },
             {
               label: 'Trạng thái',
-              render: (r) => <Status value={r.status || r.shipment?.status} />,
+              render: (r) => (
+                <Status
+                  value={r.cancellationPending ? 'Chờ duyệt hủy' : r.status || r.shipment?.status}
+                />
+              ),
             },
             {
               label: shipments ? 'Dự kiến giao' : 'Tổng tiền',

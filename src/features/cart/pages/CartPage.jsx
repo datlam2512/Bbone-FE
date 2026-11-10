@@ -1,3 +1,4 @@
+import { IconButton } from '@astryxdesign/core/IconButton'
 import { Minus, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
@@ -124,8 +125,9 @@ export default function CartPage() {
                       </p>
                     </VStack>
                     <HStack gap={3} vAlign="center">
-                      <Button
-                        aria-label="Giảm số lượng"
+                      <IconButton
+                        label="Giảm số lượng"
+                        tooltip="Giảm số lượng"
                         icon={<Minus size={16} />}
                         size="sm"
                         onClick={() => change(row, row.quantity - 1)}
@@ -134,8 +136,9 @@ export default function CartPage() {
                       <p className="text-sm" aria-label="Số lượng">
                         {row.quantity}
                       </p>
-                      <Button
-                        aria-label="Tăng số lượng"
+                      <IconButton
+                        label="Tăng số lượng"
+                        tooltip="Tăng số lượng"
                         icon={<Plus size={16} />}
                         size="sm"
                         onClick={() => change(row, row.quantity + 1)}

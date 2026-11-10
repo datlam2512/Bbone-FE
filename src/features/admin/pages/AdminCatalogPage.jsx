@@ -1,3 +1,4 @@
+import RevisionInbox from '../components/RevisionInbox'
 import { useCallback, useState } from 'react'
 import { HStack } from '@astryxdesign/core/HStack'
 import { Button } from '@astryxdesign/core/Button'
@@ -169,11 +170,15 @@ export default function AdminCatalogPage({ kind = 'products' }) {
       }
     >
       <Feedback command={command} />
+      {kind === 'articles' && (
+        <RevisionInbox key={revision?.id || 'inbox'} onPublished={resource.retry} />
+      )}
       {revision && (
         <Panel title="Đã tạo bản cập nhật chờ duyệt">
           <p className="text-sm">Mã bản cập nhật: {revision.id}</p>
           <p className="text-sm text-slate-500">
-            Chuyển mã và phiên bản {revision.version} cho người duyệt nội dung độc lập.
+            Bản sửa đã có trong danh sách chờ duyệt ở trên. Người duyệt độc lập sẽ đọc nội dung
+            trước khi quyết định.
           </p>
         </Panel>
       )}

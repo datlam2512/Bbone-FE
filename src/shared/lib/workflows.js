@@ -28,6 +28,7 @@ export const parseList = (value) => {
   }
 }
 export const statusLabels = {
+  CancellationPending: 'Chờ duyệt hủy',
   NotReady: 'Chưa sẵn sàng',
   Ready: 'Sẵn sàng lấy hàng',
   HandedOver: 'Đã bàn giao',
@@ -45,6 +46,11 @@ export const statusLabels = {
   Pending: 'Đang chờ',
   Paid: 'Đã thanh toán',
   Refunded: 'Đã hoàn tiền',
+  PartiallyRefunded: 'Đã hoàn một phần',
+  Requested: 'Chờ duyệt',
+  Approved: 'Đã duyệt',
+  Rejected: 'Đã từ chối',
+  Succeeded: 'Hoàn tiền thành công',
   ReadyForPickup: 'Chờ lấy hàng',
   PickedUp: 'Đã lấy hàng',
   InTransit: 'Đang vận chuyển',

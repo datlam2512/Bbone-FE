@@ -1,7 +1,7 @@
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
 import { Button } from '@astryxdesign/core/Button'
-export default function DataTable({ rows, columns, page = 1, total = 0, onPage }) {
+export default function DataTable({ rows, columns, page = 1, total = 0, pageSize = 20, onPage }) {
   return (
     <VStack gap={4}>
       <section className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -42,7 +42,7 @@ export default function DataTable({ rows, columns, page = 1, total = 0, onPage }
           <Button
             label="Sau"
             size="sm"
-            isDisabled={page * 20 >= total}
+            isDisabled={page * pageSize >= total}
             onClick={() => onPage(page + 1)}
           />
         </HStack>

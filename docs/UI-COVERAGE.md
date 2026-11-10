@@ -1,3 +1,7 @@
+# Update 10/11/2026
+
+The body-check page now has region selection, one-question-at-a-time navigation, sourced symptom guidance, explicit save consent and private history. The original clinician-approved screening API remains separate. Paid/COD cancellation now waits for seller approval and creates a separate finance refund request; status changes do not invent refund success. Cart controls use accessible minus/plus icons.
+
 # BBONE interface coverage
 
 The existing React routes now render working screens instead of PlannedPage placeholders. API state, validation, errors, empty results, role guards and pagination share small components in `shared/components/ui/Workflow.jsx` and `DataTable.jsx`.
@@ -17,9 +21,9 @@ The existing React routes now render working screens instead of PlannedPage plac
 
 - The backend controls authorization, transitions, inventory, deadlines and concurrency. Failed writes do not produce success messages. Repeated attempts at the same idempotent command retain their request key.
 - No health rules, diagnoses, medication lists or analytic metrics are fabricated. Screening remains unavailable while its backend feature is disabled or no approved definition exists. Prescribing still requires its separately configured backend signing workflow.
-- Published article edits create a revision rather than overwrite published content. The current backend has no pending-revision list/detail endpoint: review coordination still uses the returned revision identifiers. This is not presented as an implemented review inbox.
-- The runtime policy API exposes the effective policy but does not expose the BusinessSetting concurrency version needed for subsequent edits; its screen is read-only.
-- Provider-based Google/Apple sign-in, real email/SMS delivery, real payment and carrier integrations require configured providers. They are not simulated as successful external integrations.
+- Published article edits create a revision. A review inbox now lists and opens revisions for review, immediate/scheduled publication or rejection, with independent reviewer/doctor and version checks. Doctors access this via /nhan-vien/noi-dung.
+- Runtime policy is editable by Admin. Its API exposes concurrencyVersion; stale writes are rejected and a change reason is required. Existing orders/appointments retain their recorded policy.
+- Google/Apple, SMS/push, scanner and signing integrations require configured providers. Resend is connected locally; mail to arbitrary recipients still requires a verified sender domain. Payment and carrier workflows remain simulations by project choice.
 - This is a responsive web interface; a native iOS/Android application is separate work.
 
 ## Validation

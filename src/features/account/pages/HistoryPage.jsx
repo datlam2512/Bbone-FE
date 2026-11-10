@@ -1,3 +1,4 @@
+import { bodyRegions, outcomeLabels } from '@/features/screening/lib/screening-content'
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
@@ -12,14 +13,25 @@ import { formatMoney } from '@/shared/lib/format'
 
 export default function HistoryPage({ kind = 'appointments' }) {
   const [page, setPage] = useState(1),
-    [status, setStatus] = useState('')
+    [status, setStatus] = useState(''),
+    [screeningSource, setScreeningSource] = useState('symptoms')
   const resource = useResource(
     useCallback(
       (signal) =>
-        api.get('/' + kind + '?page=' + page + '&size=10' + (status ? '&status=' + status : ''), {
-          signal,
-        }),
-      [kind, page, status],
+        api.get(
+          '/' +
+            (kind === 'screening/results' && screeningSource === 'symptoms'
+              ? 'screening/check/results'
+              : kind) +
+            '?page=' +
+            page +
+            '&size=10' +
+            (status ? '&status=' + status : ''),
+          {
+            signal,
+          },
+        ),
+      [kind, page, status, screeningSource],
     ),
   )
   const appointments = kind === 'appointments',
@@ -35,6 +47,20 @@ export default function HistoryPage({ kind = 'appointments' }) {
       description="Theo dõi các yêu cầu và thông tin cập nhật của bạn."
       back="/tai-khoan"
     >
+      {screening && (
+        <Field
+          label="Loại bản ghi"
+          type="select"
+          value={screeningSource}
+          onChange={(e) => {
+            setScreeningSource(e.target.value)
+            setPage(1)
+          }}
+        >
+          <option value="symptoms">Ghi nhận triệu chứng</option>
+          <option value="clinical">Kết quả bộ câu hỏi chuyên môn trước đây</option>
+        </Field>
+      )}
       {!screening && (
         <Field
           label="Lọc trạng thái"
@@ -70,9 +96,19 @@ export default function HistoryPage({ kind = 'appointments' }) {
             <Panel key={row.id}>
               <HStack gap={4} hAlign="between" wrap="wrap">
                 <VStack gap={2}>
-                  <Status value={row.status || row.level} />
-                  <h2 className="font-semibold">{row.code || row.region}</h2>
-                  <p className="text-sm">{row.serviceName || row.adviceSnapshot}</p>
+                  <Status
+                    value={
+                      row.cancellationPending
+                        ? 'Chờ duyệt hủy'
+                        : row.status || outcomeLabels[row.outcome] || row.level
+                    }
+                  />
+                  <h2 className="font-semibold">
+                    {row.code ||
+                      bodyRegions.find((region) => region.id === row.region)?.label ||
+                      row.region}
+                  </h2>
+                  <p className="text-sm">{row.serviceName || row.advice || row.adviceSnapshot}</p>
                   <p className="text-sm text-slate-500">
                     {dateTime(row.startsAt || row.createdAt)}
                   </p>
