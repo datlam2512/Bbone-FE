@@ -21,6 +21,15 @@ export const router = createBrowserRouter([
         Component: PublicLayout,
         children: [
           { index: true, lazy: lazyPage(() => import('@/features/home/pages/HomePage')) },
+          ...[
+            ['ve-chung-toi', 'Về BBONE'],
+            ['lien-he', 'Liên hệ BBONE'],
+            ['thong-tin', 'Trung tâm thông tin BBONE'],
+          ].map(([path, title]) => ({
+            path,
+            handle: { title },
+            lazy: lazyPage(() => import('@/features/information/pages/InformationPage')),
+          })),
           {
             path: 'thong-tin/:slug',
             lazy: lazyPage(() => import('@/features/information/pages/InformationPage')),
@@ -150,6 +159,8 @@ export const router = createBrowserRouter([
               }[path]
               return { Component: () => <Page kind={kind} /> }
             }
+            if (path === 'hoan-tien')
+              return { Component: (await import('@/features/admin/pages/RefundsPage')).default }
             if (path === 'nguoi-dung')
               return { Component: (await import('@/features/admin/pages/AdminUsersPage')).default }
             if (['don-hang', 'giao-hang'].includes(path)) {

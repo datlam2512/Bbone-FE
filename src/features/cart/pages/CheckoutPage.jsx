@@ -21,11 +21,12 @@ export default function CheckoutPage() {
       async (signal) => {
         const cart = await api.get('/cart', { signal })
         if (!cart.length) return { cart, quote: null, addresses: [] }
-        const [quote, addresses] = await Promise.all([
+        const [quote, addresses, paymentConfig] = await Promise.all([
           api.get('/cart/quote?coupon=' + encodeURIComponent(coupon), { signal }),
           api.get('/me/addresses', { signal }),
+          api.get('/payments/config', { signal, auth: false }),
         ])
-        return { cart, quote, addresses }
+        return { cart, quote, addresses, paymentConfig }
       },
       [coupon],
     ),
@@ -106,8 +107,15 @@ export default function CheckoutPage() {
                     Thanh toán khi nhận hàng (COD)
                   </label>
                   <label className="flex gap-3 rounded-lg border border-slate-200 p-4 text-sm">
-                    <input type="radio" name="method" value="VietQR" />
-                    VietQR mô phỏng — không chuyển tiền thật
+                    <input
+                      type="radio"
+                      name="method"
+                      value="VietQR"
+                      disabled={!data.paymentConfig?.available}
+                    />
+                    {data.paymentConfig?.isSimulation
+                      ? 'VietQR mô phỏng — không chuyển tiền thật'
+                      : 'Chuyển khoản VietQR — đối soát thủ công'}
                   </label>
                 </Panel>
               </VStack>

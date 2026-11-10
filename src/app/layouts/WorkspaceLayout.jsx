@@ -18,6 +18,7 @@ import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { adminRoutes } from '@/features/admin/admin.routes'
 
 const adminLinks = [
+  ['/quan-tri/hoan-tien', 'Hoàn tiền', Package],
   ['/quan-tri', 'Tổng quan', LayoutDashboard],
   ['/quan-tri/phong-kham', 'Phòng khám', Home],
   ['/quan-tri/dich-vu', 'Dịch vụ', CalendarDays],

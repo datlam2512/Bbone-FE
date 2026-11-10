@@ -1,3 +1,4 @@
+import BankReceiptForm from '../components/BankReceiptForm'
 import { useCallback, useState } from 'react'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
@@ -134,15 +135,12 @@ export default function AdminOrdersPage({ shipments = false }) {
     }
   }
   const row = shipments ? detail.data?.shipment : detail.data?.order
-  const actions = shipments
-    ? transitions[row?.status] || []
-    : !row?.cancellationPending &&
-        row?.status === 'Confirmed' &&
-        ['Admin', 'Commerce'].includes(role)
-      ? ['process']
-      : row?.status === 'Delivered' && ['Admin', 'Commerce'].includes(role)
-        ? ['complete']
-        : []
+  let actions = shipments ? transitions[row?.status] || [] : []
+  if (!shipments && !row?.cancellationPending && ['Admin', 'Commerce'].includes(role)) {
+    if (row?.status === 'PendingConfirmation') actions = ['confirm']
+    if (row?.status === 'Confirmed') actions = ['process']
+    if (row?.status === 'Delivered') actions = ['complete']
+  }
   return (
     <Page
       title={shipments ? 'Quản lý giao hàng' : 'Quản lý đơn hàng'}
@@ -184,6 +182,7 @@ export default function AdminOrdersPage({ shipments = false }) {
           : [
               'CancellationPending',
               'PendingPayment',
+              'PendingConfirmation',
               'Confirmed',
               'Processing',
               'Shipped',
@@ -266,6 +265,23 @@ export default function AdminOrdersPage({ shipments = false }) {
                     </p>
                   </>
                 )}
+                {!shipments &&
+                  ['Admin', 'Finance'].includes(role) &&
+                  (detail.data.payments || [])
+                    .filter(
+                      (payment) =>
+                        payment.provider === 'VietQrManual' && payment.status === 'Pending',
+                    )
+                    .map((payment) => (
+                      <BankReceiptForm
+                        key={payment.id}
+                        payment={payment}
+                        refresh={() => {
+                          detail.retry()
+                          resource.retry()
+                        }}
+                      />
+                    ))}
                 {!shipments && row.cancellationPending && (
                   <Panel title="Yêu cầu hủy chờ duyệt">
                     <p className="text-sm">Lý do khách hàng: {row.cancellationReason}</p>
@@ -307,7 +323,11 @@ export default function AdminOrdersPage({ shipments = false }) {
                       {actions.map((a) => (
                         <option key={a} value={a}>
                           {statusLabels[a] ||
-                            { process: 'Bắt đầu xử lý đơn', complete: 'Hoàn tất đơn hàng' }[a] ||
+                            {
+                              confirm: 'Xác nhận đơn của người bán',
+                              process: 'Bắt đầu xử lý đơn',
+                              complete: 'Hoàn tất đơn hàng',
+                            }[a] ||
                             a}
                         </option>
                       ))}

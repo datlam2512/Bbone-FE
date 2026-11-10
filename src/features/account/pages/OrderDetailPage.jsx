@@ -1,3 +1,4 @@
+import OrderRefundPanel from '../components/OrderRefundPanel'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import OrderPaymentPanel from '../components/OrderPaymentPanel'
@@ -128,16 +129,24 @@ export default function OrderDetailPage() {
               </Panel>
             )}
             {(data.refunds || []).map((refund) => (
-              <Panel key={refund.id} title="Hoàn tiền">
-                <Status value={refund.status} />
-                <p>{formatMoney(refund.amount)}</p>
-              </Panel>
+              <OrderRefundPanel
+                key={refund.id}
+                refund={refund}
+                payment={data.payments.find((payment) => payment.id === refund.paymentId)}
+                refresh={resource.retry}
+              />
             ))}
             {data.payments.map((p) => (
-              <OrderPaymentPanel key={p.id} payment={p} refresh={resource.retry} />
+              <OrderPaymentPanel
+                key={p.id}
+                payment={p}
+                refresh={resource.retry}
+                beneficiary={data.beneficiary}
+                canPay={order.status === 'PendingPayment' && !order.cancellationPending}
+              />
             ))}
             {!order.cancellationPending &&
-              ['PendingPayment', 'Confirmed', 'Processing'].includes(order.status) && (
+              ['PendingPayment', 'PendingConfirmation'].includes(order.status) && (
                 <Button label="Yêu cầu hủy đơn" onClick={() => setCancel(!cancel)} />
               )}{' '}
             {cancel && (

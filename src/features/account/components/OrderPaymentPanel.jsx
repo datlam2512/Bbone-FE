@@ -9,7 +9,7 @@ import { useCommand } from '@/shared/hooks/use-command'
 import { dateTime } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
 
-export default function OrderPaymentPanel({ payment, refresh }) {
+export default function OrderPaymentPanel({ payment, refresh, beneficiary, canPay }) {
   const command = useCommand()
   const qr = useResource(
     useCallback(
@@ -40,6 +40,46 @@ export default function OrderPaymentPanel({ payment, refresh }) {
       <Feedback command={command} />
       <Status value={payment.status} />
       <p className="font-semibold">{formatMoney(payment.amount)}</p>
+      {!payment.isSimulation && payment.provider === 'VietQrManual' && (
+        <>
+          {beneficiary && (
+            <section className="space-y-2 rounded-xl bg-brand-50 p-4 text-sm">
+              <p>Ngân hàng: {beneficiary.bankCode}</p>
+              <p className="font-semibold">
+                {beneficiary.accountNumber} · {beneficiary.accountName}
+              </p>
+              <p className="break-all">Nội dung chuyển khoản: {payment.providerReference}</p>
+            </section>
+          )}
+          {payment.status === 'Pending' && canPay && (
+            <>
+              <img
+                src={payment.checkoutUrl}
+                alt="Mã VietQR chuyển khoản thật"
+                width="280"
+                height="280"
+                referrerPolicy="no-referrer"
+                className="max-w-full self-center"
+              />
+              <p className="text-sm leading-7">
+                Kiểm tra đúng tên người nhận, số tiền và nội dung trong ứng dụng ngân hàng. Chuyển
+                khoản thật sẽ được tài chính đối soát trước khi cập nhật thanh toán.
+              </p>
+              <Button label="Kiểm tra cập nhật thanh toán" onClick={refresh} />
+            </>
+          )}
+        </>
+      )}
+      {payment.receiptEmailStatus && (
+        <p className="text-xs text-slate-600">
+          Email xác nhận:{' '}
+          {payment.receiptEmailStatus === 'Completed'
+            ? 'Đã gửi qua nhà cung cấp'
+            : ['NeedsReview', 'Failed', 'DeadLetter'].includes(payment.receiptEmailStatus)
+              ? 'Cần kiểm tra việc gửi thư'
+              : 'Đang chờ gửi'}
+        </p>
+      )}
       {payment.isSimulation && (
         <>
           <p className="text-sm text-slate-500">

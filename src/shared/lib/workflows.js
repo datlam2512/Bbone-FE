@@ -36,6 +36,7 @@ export const statusLabels = {
   Unpaid: 'Chưa thanh toán',
   Failed: 'Thất bại',
   Confirmed: 'Đã xác nhận',
+  PendingConfirmation: 'Chờ người bán xác nhận',
   CheckedIn: 'Đã tiếp đón',
   InProgress: 'Đang khám',
   Completed: 'Hoàn tất',

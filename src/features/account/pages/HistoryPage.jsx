@@ -76,6 +76,7 @@ export default function HistoryPage({ kind = 'appointments' }) {
             ? ['Confirmed', 'CheckedIn', 'InProgress', 'Completed', 'Cancelled', 'NoShow']
             : [
                 'PendingPayment',
+                'PendingConfirmation',
                 'Confirmed',
                 'Processing',
                 'Shipped',

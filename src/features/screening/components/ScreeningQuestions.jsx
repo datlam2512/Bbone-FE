@@ -85,8 +85,8 @@ export default function ScreeningQuestions({ flow }) {
                     role="alert"
                     className="rounded-xl bg-red-50 p-4 text-sm leading-7 text-red-800"
                   >
-                    Triệu chứng này cần được cơ sở cấp cứu đánh giá ngay. Không chờ hoàn thành bảng
-                    hỏi.
+                    Ưu tiên đến cơ sở cấp cứu để được đánh giá ngay. Bạn có thể dừng bảng hỏi tại
+                    đây; tiếp tục ghi nhận là không bắt buộc.
                   </p>
                 )}
                 {question.trigger === 'Urgent' && answers[question.id] === 'Có' && (
