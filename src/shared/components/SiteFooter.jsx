@@ -40,15 +40,17 @@ export default function SiteFooter() {
     <footer className="mt-20 bg-ink text-blue-100">
       <section className="mx-auto w-full max-w-7xl px-5 py-10 lg:px-8 2xl:px-10">
         <section className="grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
-          <section className="max-w-64">
+          <section className="max-w-60">
             <Link
               to="/"
               aria-label="BBONE — Trang chủ"
-              className="inline-flex flex-col items-center"
+              className="inline-flex flex-col items-start"
             >
-              <img src="/favicon.svg" alt="" width="48" height="48" />
-              <small className="mt-1 text-xl font-extrabold tracking-tight text-white">BBONE</small>
-              <small className="mt-1 text-xs font-medium tracking-wide text-blue-200">
+              <div className="flex items-center gap-3">
+                <img src="/favicon.svg" alt="" width="48" height="48" />
+                <small className="text-xl font-extrabold tracking-tight text-white">BBONE</small>
+              </div>
+              <small className="mt-2 text-xs font-medium tracking-wide text-blue-200">
                 CHỦ ĐỘNG THAY ĐỔI, HƯỚNG TỚI TƯƠNG LAI
               </small>
             </Link>

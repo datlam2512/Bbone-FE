@@ -10,7 +10,7 @@ export default function Brand({ compact = false }) {
       <img src="/favicon.svg" alt="" width="38" height="38" />
       {!compact && (
         <span className="text-2xl font-extrabold tracking-tight text-ink">
-          BBONE<span className="ml-1 text-brand-600">2.0</span>
+          BBONE
         </span>
       )}
     </Link>
