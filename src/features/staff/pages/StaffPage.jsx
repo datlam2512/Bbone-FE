@@ -1,5 +1,6 @@
+import DoctorAssignmentForm from '../components/DoctorAssignmentForm'
 import { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
 import { Button } from '@astryxdesign/core/Button'
@@ -18,6 +19,8 @@ const steps = {
   InProgress: ['Completed'],
 }
 export default function StaffPage({ mode = 'overview' }) {
+  const { pathname } = useLocation()
+  const workspacePath = pathname.startsWith('/quan-tri') ? '/quan-tri' : '/nhan-vien'
   const patients = mode === 'patients',
     role = useAuthStore((s) => s.user?.role),
     [page, setPage] = useState(1),
@@ -91,7 +94,10 @@ export default function StaffPage({ mode = 'overview' }) {
       description="Dữ liệu được giới hạn theo cơ sở và phân công của tài khoản."
       actions={
         <HStack gap={3} wrap="wrap">
-          <Link to="/nhan-vien/dat-tai-quay" className="text-sm font-semibold text-brand-600">
+          <Link
+            to={workspacePath + '/dat-tai-quay'}
+            className="text-sm font-semibold text-brand-600"
+          >
             Đặt lịch tại quầy →
           </Link>
           {role === 'Doctor' && (
@@ -172,6 +178,16 @@ export default function StaffPage({ mode = 'overview' }) {
           ) : (
             <>
               <Status value={selected.status} />
+              {['Admin', 'ClinicManager'].includes(role) &&
+                ['Confirmed', 'CheckedIn'].includes(selected.status) && (
+                  <DoctorAssignmentForm
+                    appointment={selected}
+                    onSaved={(updated) => {
+                      setSelected(updated)
+                      resource.retry()
+                    }}
+                  />
+                )}
               <p className="text-sm">
                 {selected.serviceName} · {dateTime(selected.startsAt)}
               </p>

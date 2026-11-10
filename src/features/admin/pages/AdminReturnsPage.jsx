@@ -93,7 +93,12 @@ export default function AdminReturnsPage() {
       description="Duyệt yêu cầu, kiểm nhận hàng về và chuyển hồ sơ hoàn tiền. Không tự nhập lại hàng chưa kiểm tra."
     >
       <Feedback command={command} />
-      <ResourceState {...list} empty={!itemsOf(list.data).length}>
+      <ResourceState
+        emptyTitle="Chưa có yêu cầu trả hàng"
+        emptyDescription="Yêu cầu của khách sẽ xuất hiện tại đây sau khi được gửi."
+        {...list}
+        empty={!itemsOf(list.data).length}
+      >
         <DataTable
           rows={itemsOf(list.data)}
           page={page}

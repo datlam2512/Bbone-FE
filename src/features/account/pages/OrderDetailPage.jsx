@@ -47,8 +47,9 @@ export default function OrderDetailPage() {
   }
   const payments = data?.payments || []
   const activePayment =
-    payments.find((payment) => payment.status === 'Pending') ||
-    payments.find((payment) => ['Paid', 'Refunded', 'PartiallyRefunded'].includes(payment.status))
+    payments.find((payment) =>
+      ['Paid', 'Refunded', 'PartiallyRefunded'].includes(payment.status),
+    ) || payments.find((payment) => payment.status === 'Pending')
   const pastPayments = payments.filter((payment) => payment.id !== activePayment?.id)
   const canCancel =
     order &&

@@ -135,3 +135,42 @@ test('a successful response from an old account cannot enter the new account vie
   release(json({ privateData: 'old-account' }))
   await assert.rejects(pending, (error) => error instanceof ApiError && error.status === 401)
 })
+
+test('multipart image upload retains the file and browser boundary when refreshing an expired access token', async () => {
+  const form = new FormData()
+  form.append('file', new Blob(['image-bytes'], { type: 'image/png' }), 'photo.png')
+  let uploads = 0
+  const { client } = fixture(async (url, options) => {
+    if (url.endsWith('/auth/refresh'))
+      return json({ accessToken: 'new-access', refreshToken: 'new-refresh' })
+    uploads++
+    assert.equal(options.body, form)
+    assert.equal(options.headers.has('Content-Type'), false)
+    assert.equal(await options.body.get('file').text(), 'image-bytes')
+    return uploads === 1 ? json({}, 401) : json({ url: '/media/uploads/test.webp' })
+  })
+  assert.equal((await client.post('/admin/media/products', form)).url, '/media/uploads/test.webp')
+  assert.equal(uploads, 2)
+})
+
+test('cookie sessions refresh without a JS refresh token and survive transient connection errors', async () => {
+  let calls = 0
+  const f = fixture(async (url, options) => {
+    if (url.endsWith('/auth/browser/refresh')) {
+      assert.equal(options.credentials, 'include')
+      assert.equal(options.body, undefined)
+      return json({ accessToken: 'restored', cookieSession: true })
+    }
+    calls++
+    return calls === 1 ? json({}, 401) : json({ ok: true })
+  })
+  f.replaceSession({ accessToken: 'old', cookieSession: true, sessionKey: 'browser' })
+  assert.deepEqual(await f.client.get('/me'), { ok: true })
+  const offline = fixture(async (url) => {
+    if (url.endsWith('/auth/browser/refresh')) throw new Error('offline')
+    return json({}, 401)
+  })
+  offline.replaceSession({ accessToken: 'old', cookieSession: true, sessionKey: 'browser' })
+  await assert.rejects(offline.client.get('/me'))
+  assert.equal(offline.session().sessionKey, 'browser')
+})

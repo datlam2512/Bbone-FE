@@ -6,6 +6,7 @@ export default function PasswordField({
   label = 'Mật khẩu',
   name = 'password',
   newPassword = false,
+  minLength = newPassword ? 12 : undefined,
 }) {
   const [visible, setVisible] = useState(false)
   return (
@@ -13,12 +14,13 @@ export default function PasswordField({
       label={label}
       name={name}
       newPassword={newPassword}
+      minLength={minLength}
       visible={visible}
       toggle={() => setVisible(!visible)}
     />
   )
 }
-function VStackField({ label, name, newPassword, visible, toggle }) {
+function VStackField({ label, name, newPassword, visible, toggle, minLength }) {
   return (
     <section className="space-y-2">
       <Field
@@ -27,12 +29,12 @@ function VStackField({ label, name, newPassword, visible, toggle }) {
         type={visible ? 'text' : 'password'}
         autoComplete={newPassword ? 'new-password' : 'current-password'}
         required
-        minLength={newPassword ? 12 : undefined}
+        minLength={minLength}
         maxLength={128}
       />
       <HStack hAlign="between" vAlign="center" gap={3}>
         <p className="text-xs text-slate-500">
-          {newPassword ? 'Từ 12 đến 128 ký tự.' : 'Giữ riêng mật khẩu của bạn.'}
+          {newPassword ? `Từ ${minLength} đến 128 ký tự.` : 'Giữ riêng mật khẩu của bạn.'}
         </p>
         <Button
           label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}

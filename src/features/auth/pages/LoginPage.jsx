@@ -1,3 +1,4 @@
+import { loginDestination } from '../lib/login-destination'
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
@@ -16,7 +17,7 @@ export default function LoginPage() {
     [error, setError] = useState(null),
     [mfa, setMfa] = useState(false),
     [verify, setVerify] = useState(false)
-  if (user) return <Navigate to="/tai-khoan" replace />
+  if (user) return <Navigate to={loginDestination(user.role, location.state?.from)} replace />
   async function submit(e) {
     e.preventDefault()
     if (pending) return
@@ -25,16 +26,13 @@ export default function LoginPage() {
     setError(null)
     setVerify(false)
     try {
-      await signIn({
+      const authenticated = await signIn({
         email: f.get('email').trim(),
         password: f.get('password'),
         totpCode: f.get('totpCode')?.trim() || null,
         roleContext: null,
       })
-      const from = location.state?.from
-      navigate(from?.startsWith('/') && !from.startsWith('//') ? from : '/tai-khoan', {
-        replace: true,
-      })
+      navigate(loginDestination(authenticated.role, location.state?.from), { replace: true })
     } catch (failure) {
       setError(failure.message)
       if (failure.code?.includes('MFA')) setMfa(true)

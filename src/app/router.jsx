@@ -34,6 +34,10 @@ export const router = createBrowserRouter([
             path: 'thong-tin/:slug',
             lazy: lazyPage(() => import('@/features/information/pages/InformationPage')),
           },
+          {
+            path: 'accept-invitation',
+            lazy: lazyPage(() => import('@/features/auth/pages/InvitationPage')),
+          },
           { path: 'dang-nhap', lazy: lazyPage(() => import('@/features/auth/pages/LoginPage')) },
           ...[
             ['verify-email', 'verify'],
@@ -159,6 +163,28 @@ export const router = createBrowserRouter([
               }[path]
               return { Component: () => <Page kind={kind} /> }
             }
+            if (path === 'khung-gio')
+              return { Component: (await import('@/features/staff/pages/SchedulePage')).default }
+            if (path === 'dat-tai-quay')
+              return { Component: (await import('@/features/staff/pages/DeskBookingPage')).default }
+            if (path === 'lich-kham') {
+              const { default: Page } = await import('@/features/staff/pages/StaffPage')
+              return { Component: () => <Page mode="appointments" /> }
+            }
+            if (path === 'khuyen-mai')
+              return {
+                Component: (await import('@/features/admin/pages/AdminCouponsPage')).default,
+              }
+            if (path === 'tra-hang')
+              return {
+                Component: (await import('@/features/admin/pages/AdminReturnsPage')).default,
+              }
+            if (path === 'kho-hang')
+              return {
+                Component: (await import('@/features/admin/pages/AdminInventoryPage')).default,
+              }
+            if (path === 'thu-vien-anh')
+              return { Component: (await import('@/features/admin/pages/AdminImagesPage')).default }
             if (path === 'hoan-tien')
               return { Component: (await import('@/features/admin/pages/RefundsPage')).default }
             if (path === 'nguoi-dung')

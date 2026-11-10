@@ -1,3 +1,5 @@
+import ImageUploadField from '../components/ImageUploadField'
+import MediaImage from '@/shared/components/ui/MediaImage'
 import RevisionInbox from '../components/RevisionInbox'
 import { useCallback, useState } from 'react'
 import { HStack } from '@astryxdesign/core/HStack'
@@ -21,7 +23,7 @@ const configs = {
       ['brand', 'Thương hiệu'],
       ['category', 'Danh mục'],
       ['price', 'Giá bán', 'number'],
-      ['imageUrl', 'Đường dẫn ảnh'],
+      ['imageUrl', 'Ảnh sản phẩm', 'image'],
       ['description', 'Mô tả', 'textarea'],
       ['active', 'Đang kinh doanh', 'checkbox'],
       ['published', 'Công khai', 'checkbox'],
@@ -33,7 +35,7 @@ const configs = {
       ['title', 'Tiêu đề'],
       ['slug', 'Đường dẫn bài viết'],
       ['category', 'Chuyên mục'],
-      ['coverImageUrl', 'Ảnh bìa'],
+      ['coverImageUrl', 'Ảnh bìa bài viết', 'image'],
       ['content', 'Nội dung văn bản / Markdown', 'textarea'],
       ['requiresMedicalReview', 'Cần duyệt chuyên môn', 'checkbox'],
     ],
@@ -41,6 +43,7 @@ const configs = {
   clinics: {
     title: 'Quản lý phòng khám',
     fields: [
+      ['imageUrl', 'Ảnh đại diện cơ sở', 'image'],
       ['name', 'Tên cơ sở'],
       ['address', 'Địa chỉ'],
       ['phone', 'Điện thoại'],
@@ -60,6 +63,7 @@ const configs = {
   },
 }
 export default function AdminCatalogPage({ kind = 'products' }) {
+  const [uploading, setUploading] = useState(false)
   const config = configs[kind],
     role = useAuthStore((s) => s.user?.role),
     [page, setPage] = useState(1),
@@ -95,6 +99,7 @@ export default function AdminCatalogPage({ kind = 'products' }) {
     command = useCommand()
   async function save(e) {
     e.preventDefault()
+    if (uploading) return
     const f = new FormData(e.currentTarget),
       body = { version: selected.id ? selected.version : null }
     for (const [name, , type] of config.fields)
@@ -104,6 +109,7 @@ export default function AdminCatalogPage({ kind = 'products' }) {
           : type === 'number'
             ? Number(f.get(name))
             : f.get(name) || ''
+    if (kind === 'clinics') body.profileVersion = selected.profileVersion || null
     if (kind === 'services') body.clinicId = selected.clinicId || clinicId
     const ok = await command.run(
       async () => {
@@ -216,7 +222,16 @@ export default function AdminCatalogPage({ kind = 'products' }) {
               </>
             ) : (
               config.fields.map(([name, label, type = 'text']) =>
-                type === 'checkbox' ? (
+                type === 'image' ? (
+                  <ImageUploadField
+                    key={name}
+                    name={name}
+                    label={label}
+                    kind={kind}
+                    initialUrl={selected[name] || ''}
+                    onBusyChange={setUploading}
+                  />
+                ) : type === 'checkbox' ? (
                   <label key={name} className="flex items-center gap-3 text-sm">
                     <input
                       type="checkbox"
@@ -245,7 +260,13 @@ export default function AdminCatalogPage({ kind = 'products' }) {
               )
             )}
             <HStack gap={3} wrap="wrap">
-              <Submit command={command} />
+              <Button
+                type="submit"
+                label="Lưu thay đổi"
+                variant="primary"
+                isLoading={command.pending}
+                isDisabled={uploading}
+              />
               <Button label="Đóng" onClick={() => setSelected(null)} />
             </HStack>
           </form>
@@ -258,6 +279,20 @@ export default function AdminCatalogPage({ kind = 'products' }) {
           total={resource.data?.total}
           onPage={setPage}
           columns={[
+            ...(kind !== 'services'
+              ? [
+                  {
+                    label: 'Ảnh',
+                    render: (row) => (
+                      <MediaImage
+                        src={row.imageUrl || row.coverImageUrl}
+                        alt={row.name || row.title}
+                        className="h-14 w-16 rounded-lg object-cover"
+                      />
+                    ),
+                  },
+                ]
+              : []),
             {
               label: kind === 'articles' ? 'Tiêu đề' : 'Tên',
               render: (r) => <p className="max-w-sm font-medium">{r.name || r.title}</p>,

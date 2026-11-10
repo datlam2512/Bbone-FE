@@ -1,4 +1,5 @@
 import '@/shared/styles/layers.css'
+import SessionBootstrap from '@/features/auth/components/SessionBootstrap'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
@@ -12,7 +13,9 @@ import '@/shared/styles/globals.css'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Theme theme={themes[defaultThemeSlug]} mode="light">
-      <RouterProvider router={router} />
+      <SessionBootstrap>
+        <RouterProvider router={router} />
+      </SessionBootstrap>
     </Theme>
   </StrictMode>,
 )

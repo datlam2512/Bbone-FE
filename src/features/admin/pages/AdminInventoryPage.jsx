@@ -101,7 +101,12 @@ export default function AdminInventoryPage() {
       </ResourceState>
       {product && (
         <Panel title={'Các lô · ' + product.name}>
-          <ResourceState {...lots} empty={!itemsOf(lots.data).length}>
+          <ResourceState
+            emptyTitle="Chưa có lô hàng"
+            emptyDescription="Nhập lô mới ở biểu mẫu bên dưới sau khi đối soát tồn kho."
+            {...lots}
+            empty={!itemsOf(lots.data).length}
+          >
             <DataTable
               rows={itemsOf(lots.data)}
               columns={[

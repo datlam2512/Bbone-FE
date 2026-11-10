@@ -124,7 +124,12 @@ export default function AdminCouponsPage() {
           </form>
         </Panel>
       )}
-      <ResourceState {...resource} empty={!itemsOf(resource.data).length}>
+      <ResourceState
+        emptyTitle="Chưa có mã giảm giá"
+        emptyDescription="Chọn Tạo mã giảm giá để thêm chương trình cho các đơn mới."
+        {...resource}
+        empty={!itemsOf(resource.data).length}
+      >
         <DataTable
           rows={itemsOf(resource.data)}
           page={page}

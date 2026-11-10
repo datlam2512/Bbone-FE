@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Wallet,
   Boxes,
+  Clock3,
 } from 'lucide-react'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
@@ -31,6 +32,9 @@ const adminLinks = [
   ['/quan-tri', 'Tổng quan', LayoutDashboard],
   ['/quan-tri/phong-kham', 'Phòng khám', Home],
   ['/quan-tri/dich-vu', 'Dịch vụ', CalendarDays],
+  ['/quan-tri/lich-kham', 'Lịch khám', CalendarDays],
+  ['/quan-tri/khung-gio', 'Khung giờ', Clock3],
+  ['/quan-tri/dat-tai-quay', 'Đặt tại quầy', CalendarDays],
   ['/quan-tri/bao-cao', 'Báo cáo', LayoutDashboard],
   ['/quan-tri/nhat-ky', 'Nhật ký', BookOpen],
   ['/quan-tri/tac-vu', 'Tác vụ', Package],
@@ -44,6 +48,7 @@ const adminLinks = [
   ['/quan-tri/hoan-tien', 'Hoàn tiền', Wallet],
   ['/quan-tri/kho-hang', 'Kho theo lô', Boxes],
   ['/quan-tri/noi-dung', 'Nội dung', BookOpen],
+  ['/quan-tri/thu-vien-anh', 'Thư viện ảnh', BookOpen],
 ]
 const staffLinks = [
   ['/nhan-vien/noi-dung', 'Duyệt nội dung', BookOpen],

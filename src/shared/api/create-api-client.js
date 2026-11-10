@@ -1,3 +1,4 @@
+import { withBrowserSessionLock } from '../lib/browser-session.js'
 export class ApiError extends Error {
   constructor(message, { status = 0, code, correlationId } = {}) {
     super(message)
@@ -61,23 +62,32 @@ export function createApiClient({
   async function refresh(expectedKey) {
     if (refreshFlight?.key === expectedKey) return refreshFlight.promise
     const current = getSession()
-    if (current.sessionKey !== expectedKey || !current.refreshToken) return null
+    if (current.sessionKey !== expectedKey || (!current.refreshToken && !current.cookieSession))
+      return null
     const flight = { key: expectedKey }
     flight.promise = (async () => {
       try {
-        const response = await send('/auth/refresh', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ token: current.refreshToken }),
-        })
+        const response = await (current.cookieSession
+          ? withBrowserSessionLock(() =>
+              send('/auth/browser/refresh', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { Accept: 'application/json' },
+              }),
+            )
+          : send('/auth/refresh', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ token: current.refreshToken }),
+            }))
         const pair = await readBody(response)
-        if (!response.ok || !pair?.accessToken || !pair?.refreshToken) {
+        if (!response.ok || !pair?.accessToken || (!current.cookieSession && !pair?.refreshToken)) {
           throw responseError(response, pair)
         }
         if (getSession().sessionKey !== expectedKey) return null
         return updateTokens(pair, expectedKey) ? pair.accessToken : null
       } catch (error) {
-        clearSession(expectedKey)
+        if ([401, 403].includes(error.status)) clearSession(expectedKey)
         throw error
       } finally {
         if (refreshFlight === flight) refreshFlight = null
@@ -101,7 +111,7 @@ export function createApiClient({
     if (idempotencyKey) headers.set('Idempotency-Key', idempotencyKey)
     if (auth && initial.accessToken) headers.set('Authorization', 'Bearer ' + initial.accessToken)
     let response = await send(path, { ...options, headers })
-    if (response.status === 401 && auth && initial.refreshToken) {
+    if (response.status === 401 && auth && (initial.refreshToken || initial.cookieSession)) {
       if (getSession().sessionKey !== initial.sessionKey) {
         throw new ApiError('Phiên đăng nhập đã thay đổi.', { status: 401 })
       }
