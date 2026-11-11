@@ -1,29 +1,30 @@
 # BBONE Frontend
 
-Frontend của BBONE — nền tảng chăm sóc sức khỏe xương khớp, gồm website khách hàng và workspace dành cho nhân viên, quản trị. Ứng dụng được xây dựng bằng React, Vite, Tailwind CSS và Zustand; dữ liệu nghiệp vụ được lấy từ backend qua REST API.
+Website BBONE 2.0 là dự án portfolio về chăm sóc sức khỏe xương khớp, xây dựng bằng React. Frontend cung cấp trải nghiệm cho khách hàng cùng các workspace nhân viên và quản trị; dữ liệu nghiệp vụ được lấy từ REST API backend.
 
-## Yêu cầu
+> Dự án phục vụ học tập/portfolio. VietQR và vận chuyển có chế độ mô phỏng; không có giao dịch chuyển tiền thật hoặc vận đơn hãng vận chuyển thật.
 
-- Node.js `>=22.12.0`
-- npm
-- Backend BBONE đang chạy nếu muốn đăng nhập và sử dụng dữ liệu động
+## Công nghệ
 
-## Bắt đầu trên Windows
+- React 19, Vite 8, JavaScript ES modules.
+- React Router cho điều hướng trang; Zustand cho trạng thái client.
+- Tailwind CSS 4 và Astryx Design System cho giao diện.
+- Fetch API qua lớp client dùng chung; kiểm tra chất lượng với ESLint, Node test runner và Vite build.
 
-Mở PowerShell tại thư mục dự án:
+## Chạy local
+
+Yêu cầu Node.js `>=22.12.0`, npm và backend đang chạy nếu cần dùng dữ liệu động.
 
 ```powershell
 npm.cmd ci
 npm.cmd run dev
 ```
 
-Hoặc chạy `.\dev.cmd` để tự cài dependencies khi chưa có `node_modules` rồi khởi động Vite.
+Mở `http://127.0.0.1:5173`. Vite proxy các request `/api` và `/media` tới backend `http://localhost:5080`.
 
-Mở [http://127.0.0.1:5173](http://127.0.0.1:5173). Máy chủ phát triển dùng cổng `5173`.
+### Cấu hình API
 
-## Cấu hình backend
-
-Tạo `.env.local` từ `.env.example` nếu cần thay đổi địa chỉ mặc định:
+Mặc định không cần file môi trường để chạy local. Nếu cần đổi địa chỉ backend, copy `.env.example` thành `.env.local` rồi chỉnh:
 
 ```dotenv
 VITE_API_BASE_URL=/api/v1
@@ -32,95 +33,87 @@ BACKEND_URL=http://localhost:5080
 VITE_MEDIA_BASE_URL=
 ```
 
-Trong môi trường phát triển, Vite proxy `/api` và `/media` tới `BACKEND_URL` (mặc định `http://localhost:5080`). `VITE_API_BASE_URL` mặc định là `/api/v1`.
+Khởi động lại Vite sau khi thay đổi biến môi trường. Chỉ các biến `VITE_*` được đưa vào bundle trình duyệt: **không đặt mật khẩu, API key, signing key hoặc secret trong các biến này**.
 
-Không đặt mật khẩu, API key, signing key hoặc thông tin bí mật trong biến `VITE_*`; các giá trị này được đóng gói vào mã chạy trên trình duyệt. Khi triển khai production, cấu hình reverse proxy tới backend hoặc API origin và CORS phù hợp. Tài khoản đăng nhập được quản lý bởi backend; frontend không có tài khoản mặc định.
+## Tính năng
 
-## Lệnh thường dùng
+### Khách hàng
 
-```powershell
-npm.cmd run dev          # Chạy Vite ở chế độ phát triển
-npm.cmd run lint         # Chạy ESLint
-npm.cmd test             # Chạy test tự động
-npm.cmd run build        # Tạo bản build production trong dist/
-npm.cmd run preview      # Xem thử bản build tại 127.0.0.1:4173
-npm.cmd run format:check # Kiểm tra định dạng Prettier
-npm.cmd run check        # Lint, test và build
-```
+- Trang chủ, danh sách/chi tiết sản phẩm, tìm kiếm và bộ lọc.
+- Danh sách, chi tiết phòng khám và luồng chọn dịch vụ, ngày, giờ đặt lịch.
+- Bài viết kiến thức và trang nội dung thông tin.
+- Đăng ký, đăng nhập, xác minh email, quên/đặt lại mật khẩu.
+- Giỏ hàng, mã ưu đãi, báo giá, checkout, lịch sử đơn hàng và yêu cầu hủy/hoàn trả.
+- Tài khoản, địa chỉ, lịch hẹn, đơn hàng, yêu thích, thông báo và hồ sơ.
+- Bảng câu hỏi sàng lọc triệu chứng; kết quả là gợi ý tham khảo, không phải chẩn đoán.
 
-`preview` không có proxy phát triển; cần cấu hình backend/reverse proxy cho môi trường tương ứng.
+### Nhân viên và quản trị
 
-## Các luồng chính
+- Workspace nhân viên tại `/nhan-vien`: lịch, tiếp đón, ca làm và nghiệp vụ theo quyền/cơ sở.
+- Workspace quản trị tại `/quan-tri`: dashboard, người dùng, sản phẩm, phòng khám, dịch vụ, nội dung, kho, đơn hàng, giao hàng, trả hàng, hoàn tiền, báo cáo và cấu hình.
+- Biểu mẫu quản trị mở dạng popup; quyền trên frontend chỉ hỗ trợ điều hướng, còn backend mới là nguồn xác thực cuối cùng.
 
-### Website khách hàng
-
-- Trang chủ, danh sách và chi tiết sản phẩm; tìm kiếm, lọc danh mục và phân trang.
-- Danh sách phòng khám, thông tin cơ sở, dịch vụ và đường dẫn đặt lịch.
-- Trung tâm bài viết và trang đọc bài.
-- Đăng nhập, đăng ký, xác minh tài khoản và khôi phục mật khẩu.
-- Giỏ hàng khách/tài khoản, áp dụng hoặc bỏ mã giảm giá, báo giá và thanh toán.
-- Đặt lịch, xem lịch sử, quản lý hồ sơ/tài khoản, yêu thích và thông báo.
-- Sàng lọc triệu chứng theo nội dung do backend cung cấp.
-
-### Workspace nhân viên
-
-Đường dẫn gốc: `/nhan-vien`
-
-- Tổng quan công việc, lịch khám và cập nhật trạng thái theo quyền.
-- Ghi chú tiếp đón, danh sách bệnh nhân và đặt lịch tại quầy.
-- Quản lý khung giờ; hồ sơ khám và duyệt nội dung y khoa dành cho vai trò được phép.
-- Báo cáo theo cơ sở và phân công.
-
-### Workspace quản trị
-
-Đường dẫn gốc: `/quan-tri`
-
-- Dashboard, quản lý người dùng, phòng khám, dịch vụ, sản phẩm và tồn kho.
-- Quản lý nội dung/bản sửa bài viết, mã giảm giá, đơn hàng, trả hàng và hoàn tiền.
-- Quản lý giao hàng, thư viện ảnh, báo cáo, nhật ký hệ thống, hàng đợi tác vụ và chính sách vận hành.
-
-Quyền hiển thị và điều hướng ở frontend không thay thế kiểm tra quyền của backend. Backend là nguồn quyết định cuối cùng cho quyền truy cập, dữ liệu, giá, tồn kho và chuyển trạng thái.
-
-## Cấu trúc mã nguồn
+## Cấu trúc dự án
 
 ```text
 src/
-  app/          # Router, layouts, guards và khởi tạo ứng dụng
-  features/     # Tính năng theo nghiệp vụ: auth, catalog, cart, staff, admin...
+  app/          Router, layouts, route guards, khởi tạo ứng dụng
+  features/     Tính năng theo nghiệp vụ (auth, catalog, cart, booking, admin...)
   shared/
-    api/        # API client, lỗi và query string
-    components/ # Thành phần UI dùng chung
-    config/     # Cấu hình môi trường
-    hooks/      # Hook tải dữ liệu và gửi lệnh
-    lib/        # Hàm tiện ích
-    styles/     # CSS layers, Tailwind và token
-tests/          # Kiểm thử tự động
-docs/           # Tài liệu phạm vi và hướng dẫn phát triển
+    api/        API client, lỗi và query string
+    components/ Thành phần dùng chung
+    config/     Cấu hình frontend
+    hooks/      Hooks tải dữ liệu và gửi lệnh
+    lib/        Hàm tiện ích
+    styles/     Tailwind và design tokens
+tests/          Kiểm thử tự động
+docs/           Hướng dẫn, phạm vi và nghiệp vụ
 ```
 
-Các điểm bắt đầu hữu ích:
+Điểm bắt đầu khi đọc mã: `src/main.jsx`, `src/app/router.jsx`, `src/shared/api/create-api-client.js`, `src/shared/hooks/use-resource.js`, `src/shared/hooks/use-command.js`.
 
-- `src/main.jsx`: khởi tạo React, router và theme.
-- `src/app/router.jsx`: khai báo route và lazy loading.
-- `src/shared/api/create-api-client.js`: HTTP, timeout, lỗi và refresh phiên.
-- `src/shared/hooks/use-resource.js`: tải dữ liệu, loading/error/retry và hủy request.
-- `src/shared/hooks/use-command.js`: thao tác ghi, chống gửi lặp và xử lý phản hồi.
+## Lệnh phát triển
 
-## Trạng thái và bảo mật
+```powershell
+npm.cmd run dev          # Vite development server
+npm.cmd run lint         # ESLint
+npm.cmd test             # Node test runner
+npm.cmd run build        # Production bundle vào dist/
+npm.cmd run preview      # Xem thử dist tại 127.0.0.1:4173
+npm.cmd run format:check # Kiểm tra Prettier
+npm.cmd run check        # Lint + test + build
+```
 
-- Token xác thực được giữ trong bộ nhớ; không lưu token hoặc hồ sơ y tế vào `localStorage`.
-- Giỏ khách chỉ lưu mã sản phẩm và số lượng; giá và tồn kho được tải lại từ backend.
-- Dữ liệu y tế không được ghép vào URL hoặc lưu trong trình duyệt để thay thế backend.
-- Request có thể bị hủy khi người dùng đổi trang/bộ lọc; lỗi API được đưa ra giao diện thay vì giả lập dữ liệu thành công.
-- Frontend có thể ẩn menu theo vai trò, nhưng backend phải kiểm tra quyền với mọi request và đối tượng.
+`preview` không sử dụng Vite dev proxy; cần cấu hình API origin/reverse proxy tương ứng.
 
-## Giới hạn môi trường
+## Deploy frontend lên Vercel
 
-Thanh toán VietQR và một số thao tác giao hàng là mô phỏng theo cấu hình dự án; không coi trạng thái mô phỏng là xác nhận tiền đã vào tài khoản hoặc vận đơn thật. Sàng lọc và hồ sơ y khoa phụ thuộc cấu hình, dữ liệu được backend phê duyệt và quyền người dùng. Không sử dụng dữ liệu seed hoặc môi trường local như dịch vụ y tế tiếp nhận thực tế.
+1. Import repository `Bbone-FE` từ Git provider.
+2. Chọn framework Vite, build command `npm run build`, output directory `dist`.
+3. Thêm biến môi trường trong Project Settings:
 
-## Tài liệu khác
+   ```text
+   VITE_API_BASE_URL=https://<backend-host>/api/v1
+   VITE_MEDIA_BASE_URL=https://<backend-host>
+   VITE_APP_NAME=BBONE
+   ```
 
-- [Hướng dẫn sử dụng website và trang quản trị](./docs/USER-GUIDE.md), gồm tài khoản/role thử nghiệm và luồng thao tác.
+4. Thêm URL Vercel chính xác vào cấu hình CORS của backend (`Cors__Origins__0`) rồi deploy lại backend.
+5. Kiểm tra đăng nhập, sản phẩm, ảnh `/media`, đặt lịch và tải trực tiếp/refresh các route con. Với React Router SPA, thêm rewrite về `/index.html` nếu deep link chưa được xử lý.
+
+Không đặt mật khẩu hay secret trong Vercel `VITE_*`; các giá trị này được công khai trong mã frontend. Xem hướng dẫn backend trong repo `Bbone-BE` để cấu hình Render/PostgreSQL và chế độ demo.
+
+## Bảo mật và giới hạn
+
+- Access token nằm trong bộ nhớ; frontend không lưu token hoặc hồ sơ sức khỏe vào `localStorage`.
+- Giỏ hàng phía client chỉ giữ mã sản phẩm và số lượng; backend tính lại giá, tồn kho và quyền trên mỗi thao tác.
+- Thanh toán VietQR có thể bật mô phỏng cho portfolio. Giao diện thể hiện rõ “mô phỏng, không thu tiền thật”; không được hiểu là tiền đã vào tài khoản.
+- Sàng lọc sức khỏe không chẩn đoán và không thay thế khám trực tiếp.
+- Dữ liệu seed và tài khoản Development chỉ dùng để trình diễn; không sử dụng như dữ liệu sản xuất.
+
+## Tài liệu
+
+- [Hướng dẫn sử dụng website](./docs/USER-GUIDE.md)
 - [Hướng dẫn phát triển](./docs/DEVELOPMENT.md)
-- [Phạm vi giao diện và giới hạn](./docs/UI-COVERAGE.md)
+- [Phạm vi giao diện](./docs/UI-COVERAGE.md)
 - [Đặt lịch và quản trị](./docs/BOOKING-AND-ADMIN.md)
