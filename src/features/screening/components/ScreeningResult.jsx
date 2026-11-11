@@ -12,13 +12,20 @@ export default function ScreeningResult({ flow }) {
   const { result, command } = flow
   const region = bodyRegions.find((item) => item.id === result.region)
   const urgent = ['Emergency', 'Urgent'].includes(result.outcome)
+  const { observations = [], nextSteps = [] } = result.guidance ?? {}
   return (
     <section className="grid items-start gap-6 lg:grid-cols-3">
       <VStack
         gap={5}
         className="rounded-3xl border border-brand-100 bg-white p-6 shadow-sm sm:p-8 lg:col-span-2"
       >
-        <h1 className="text-2xl font-bold">Hướng dẫn cho tình trạng của bạn</h1>
+        <header className="space-y-2">
+          <h1 className="text-2xl font-bold">Nhận xét về triệu chứng của bạn</h1>
+          <p className="text-sm leading-6 text-slate-600">
+            Đây là ý kiến tham khảo dựa trên câu trả lời của bạn. Bác sĩ cần đánh giá trực tiếp để
+            đưa ra chẩn đoán.
+          </p>
+        </header>
         <section className="grid items-center gap-6 sm:grid-cols-3">
           <VStack gap={3} className="rounded-2xl bg-brand-50 p-5">
             <JointIllustration region={region.id} large />
@@ -42,12 +49,43 @@ export default function ScreeningResult({ flow }) {
             <p className="text-sm leading-7 text-slate-700">{result.advice}</p>
           </VStack>
         </section>
-        {result.reasons.length > 0 && (
+        {observations.length > 0 ? (
           <section className="space-y-3">
-            <h2 className="font-semibold">Câu trả lời cần lưu ý</h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-7 text-slate-600">
-              {result.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
+            <h2 className="font-semibold">Vì sao có hướng dẫn này?</h2>
+            <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200">
+              {observations.map(({ title, explanation }) => (
+                <li key={title} className="space-y-1 px-4 py-3">
+                  <h3 className="text-sm font-semibold">{title}</h3>
+                  <p className="text-sm leading-6 text-slate-700">{explanation}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          result.reasons.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="font-semibold">Câu trả lời cần lưu ý</h2>
+              <ul className="list-disc space-y-2 pl-5 text-sm leading-7 text-slate-600">
+                {result.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </section>
+          )
+        )}
+        {nextSteps.length > 0 && (
+          <section
+            className={
+              'space-y-2 rounded-xl p-4 ' +
+              (urgent ? 'bg-orange-50 text-orange-950' : 'bg-brand-50 text-brand-950')
+            }
+          >
+            <h2 className="font-semibold">
+              {urgent ? 'Việc cần làm ngay' : 'Bạn có thể làm gì tiếp theo?'}
+            </h2>
+            <ul className="list-disc space-y-2 pl-5 text-sm leading-6">
+              {nextSteps.map((step) => (
+                <li key={step}>{step}</li>
               ))}
             </ul>
           </section>

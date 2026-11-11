@@ -8,9 +8,33 @@ import { useResource } from '@/shared/hooks/use-resource'
 import { useGuestCartStore } from '@/features/cart/stores/guest-cart.store'
 import { formatMoney } from '@/shared/lib/format'
 import { catalogApi } from '../api/catalog.api'
+import ReferenceProductDetail from '../components/ReferenceProductDetail'
 
 export default function ProductDetailPage() {
   const { productId } = useParams()
+  const storeId = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(productId)
+  return storeId ? (
+    <StoreProductDetail key={productId} productId={productId} />
+  ) : (
+    <DirectoryProductDetail key={productId} slug={productId} />
+  )
+}
+
+function DirectoryProductDetail({ slug }) {
+  const load = useCallback((signal) => catalogApi.directoryProduct(slug, { signal }), [slug])
+  const resource = useResource(load)
+  return (
+    <ResourceState {...resource} empty={!resource.data}>
+      {resource.data && (
+        <ReferenceProductDetail product={resource.data}>
+          {(id) => <StoreProductDetail key={id} productId={id} />}
+        </ReferenceProductDetail>
+      )}
+    </ResourceState>
+  )
+}
+
+function StoreProductDetail({ productId }) {
   const [purchase, setPurchase] = useState({ productId, quantity: 1, added: false })
   const quantity = purchase.productId === productId ? purchase.quantity : 1
   const added = purchase.productId === productId && purchase.added

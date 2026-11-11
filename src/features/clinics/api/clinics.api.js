@@ -6,4 +6,9 @@ export const clinicsApi = {
     api.get('/clinics/search' + queryString(filters), { ...options, auth: false }),
   detail: (id, options) =>
     api.get('/clinics/' + encodeURIComponent(id), { ...options, auth: false }),
+  directory: ({ search, area, page, size }, options) =>
+    api.get('/directory/clinics' + queryString({ search, area, page, size }), {
+      ...options,
+      auth: false,
+    }),
 }

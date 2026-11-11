@@ -13,6 +13,7 @@ import ResourceState from '@/shared/components/ui/ResourceState'
 import DataTable from '@/shared/components/ui/DataTable'
 import { itemsOf } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
+import { queryString } from '@/shared/api/query-string'
 
 const configs = {
   products: {
@@ -63,10 +64,13 @@ const configs = {
   },
 }
 export default function AdminCatalogPage({ kind = 'products' }) {
+  const includeDirectory = kind === 'products' || kind === 'clinics'
+  const pageSize = includeDirectory ? 10 : 20
   const [uploading, setUploading] = useState(false)
   const config = configs[kind],
     role = useAuthStore((s) => s.user?.role),
     [page, setPage] = useState(1),
+    [productCategory, setProductCategory] = useState(''),
     [selected, setSelected] = useState(null),
     [clinicId, setClinicId] = useState(''),
     [revision, setRevision] = useState(null)
@@ -79,24 +83,40 @@ export default function AdminCatalogPage({ kind = 'products' }) {
       [kind],
     ),
   )
+  const requestPage = kind === 'products' ? 1 : page
   const resource = useResource(
       useCallback(
-        (signal) =>
-          kind === 'services' && !clinicId
-            ? Promise.resolve({ items: [], total: 0 })
-            : api.get(
-                '/admin/' +
-                  kind +
-                  '?page=' +
-                  page +
-                  '&size=20' +
-                  (kind === 'services' ? '&clinicId=' + clinicId : ''),
-                { signal },
-              ),
-        [kind, page, clinicId],
+        async (signal) => {
+          if (kind === 'services' && !clinicId) return { items: [], total: 0 }
+          const filters = {
+            page: requestPage,
+            size: kind === 'products' ? 100 : pageSize,
+            includeDirectory: includeDirectory || undefined,
+            clinicId: kind === 'services' ? clinicId : undefined,
+          }
+          if (kind === 'products') return loadAllProducts(filters, signal)
+          return api.get('/admin/' + kind + queryString(filters), { signal })
+        },
+        [kind, requestPage, pageSize, includeDirectory, clinicId],
       ),
     ),
     command = useCommand()
+  const allProducts = kind === 'products' ? itemsOf(resource.data) : []
+  const categories =
+    kind === 'products'
+      ? [...new Set(allProducts.map((product) => product.category).filter(Boolean))].sort((a, b) =>
+          a.localeCompare(b, 'vi'),
+        )
+      : []
+  const editCategories = [...new Set([...categories, selected?.category].filter(Boolean))]
+  const filteredProducts = productCategory
+    ? allProducts.filter((product) => product.category === productCategory)
+    : allProducts
+  const productRows =
+    kind === 'products'
+      ? filteredProducts.slice((page - 1) * pageSize, page * pageSize)
+      : itemsOf(resource.data)
+  const productTotal = kind === 'products' ? filteredProducts.length : resource.data?.total
   async function save(e) {
     e.preventDefault()
     if (uploading) return
@@ -206,6 +226,24 @@ export default function AdminCatalogPage({ kind = 'products' }) {
           ))}
         </Field>
       )}
+      {kind === 'products' && (
+        <Field
+          label="Danh mục sản phẩm"
+          type="select"
+          value={productCategory}
+          onChange={(event) => {
+            setProductCategory(event.target.value)
+            setPage(1)
+          }}
+        >
+          <option value="">Tất cả danh mục</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </Field>
+      )}
       {selected && (
         <Panel
           title={selected.stock ? 'Điều chỉnh tồn kho' : selected.id ? 'Chỉnh sửa' : 'Thêm mới'}
@@ -240,6 +278,22 @@ export default function AdminCatalogPage({ kind = 'products' }) {
                     />
                     {label}
                   </label>
+                ) : kind === 'products' && name === 'category' ? (
+                  <Field
+                    key={name}
+                    label={label}
+                    name={name}
+                    type="select"
+                    defaultValue={selected[name] ?? ''}
+                    required
+                  >
+                    <option value="">Chọn danh mục</option>
+                    {editCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </Field>
                 ) : (
                   <Field
                     key={name}
@@ -272,11 +326,12 @@ export default function AdminCatalogPage({ kind = 'products' }) {
           </form>
         </Panel>
       )}
-      <ResourceState {...resource} empty={!itemsOf(resource.data).length}>
+      <ResourceState {...resource} empty={!productRows.length}>
         <DataTable
-          rows={itemsOf(resource.data)}
+          rows={productRows}
           page={page}
-          total={resource.data?.total}
+          pageSize={pageSize}
+          total={productTotal}
           onPage={setPage}
           columns={[
             ...(kind !== 'services'
@@ -300,7 +355,7 @@ export default function AdminCatalogPage({ kind = 'products' }) {
             {
               label: 'Thông tin',
               render: (r) =>
-                kind === 'products' || kind === 'services'
+                (kind === 'products' || kind === 'services') && !r.sourceUrl
                   ? formatMoney(r.price)
                   : r.category || r.address,
             },
@@ -309,53 +364,98 @@ export default function AdminCatalogPage({ kind = 'products' }) {
               render: (r) => (
                 <Status
                   value={
-                    kind === 'articles'
-                      ? r.published
-                        ? 'Đã công bố'
-                        : 'Bản nháp'
-                      : r.active
-                        ? 'Hoạt động'
-                        : 'Ngừng hoạt động'
+                    r.sourceUrl
+                      ? 'Tham khảo'
+                      : kind === 'articles'
+                        ? r.published
+                          ? 'Đã công bố'
+                          : 'Bản nháp'
+                        : r.active
+                          ? 'Hoạt động'
+                          : 'Ngừng hoạt động'
                   }
                 />
               ),
             },
             ...(kind === 'products'
-              ? [{ label: 'Tồn kho', render: (r) => r.onHand - r.reserved }]
+              ? [{ label: 'Tồn kho', render: (r) => (r.sourceUrl ? '—' : r.onHand - r.reserved) }]
               : []),
             {
               label: 'Thao tác',
-              render: (r) => (
-                <HStack gap={2} wrap="wrap">
-                  <Button
-                    label="Chỉnh sửa"
-                    isDisabled={role === 'Reviewer'}
-                    size="sm"
-                    onClick={() => setSelected(r)}
-                  />
-                  {kind === 'products' && (
+              render: (r) =>
+                r.sourceUrl ? (
+                  <a
+                    href={r.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-brand-700 hover:underline"
+                  >
+                    Xem nguồn ↗
+                  </a>
+                ) : (
+                  <HStack gap={2} wrap="wrap">
                     <Button
-                      label="Tồn kho"
+                      label="Chỉnh sửa"
+                      isDisabled={role === 'Reviewer'}
                       size="sm"
-                      variant="ghost"
-                      onClick={() => setSelected({ ...r, stock: true })}
+                      onClick={() => setSelected(r)}
                     />
-                  )}{' '}
-                  {kind === 'articles' && ['Reviewer', 'Doctor'].includes(role) && (
-                    <Button
-                      label={r.published ? 'Ẩn bài' : 'Công bố'}
-                      size="sm"
-                      variant="ghost"
-                      isDisabled={command.pending}
-                      onClick={() => publish(r)}
-                    />
-                  )}
-                </HStack>
-              ),
+                    {kind === 'products' && (
+                      <Button
+                        label="Tồn kho"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelected({ ...r, stock: true })}
+                      />
+                    )}{' '}
+                    {kind === 'articles' && ['Reviewer', 'Doctor'].includes(role) && (
+                      <Button
+                        label={r.published ? 'Ẩn bài' : 'Công bố'}
+                        size="sm"
+                        variant="ghost"
+                        isDisabled={command.pending}
+                        onClick={() => publish(r)}
+                      />
+                    )}
+                  </HStack>
+                ),
             },
           ]}
         />
       </ResourceState>
     </Page>
   )
+}
+
+async function loadAllProducts(filters, signal) {
+  const products = []
+  const seen = new Set()
+  for (let page = 1; ; page += 1) {
+    const result = await api.get('/admin/products' + queryString({ ...filters, page }), {
+      signal,
+    })
+    const batch = Array.isArray(result) ? result : result?.items
+    if (!Array.isArray(batch)) {
+      throw new TypeError('Danh sách sản phẩm trả về từ máy chủ không hợp lệ.')
+    }
+
+    let added = 0
+    for (const product of batch) {
+      const key = product.id ?? JSON.stringify(product)
+      if (!seen.has(key)) {
+        seen.add(key)
+        products.push(product)
+        added += 1
+      }
+    }
+
+    const hasMore = Number.isFinite(result.totalPages)
+      ? page < result.totalPages
+      : Number.isFinite(result.total)
+        ? products.length < result.total
+        : batch.length === filters.size
+    if (!hasMore || !batch.length || !added) {
+      return { ...result, items: products, total: products.length }
+    }
+  }
 }

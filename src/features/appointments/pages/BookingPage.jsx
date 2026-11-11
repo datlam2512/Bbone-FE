@@ -73,14 +73,15 @@ export default function BookingPage() {
     useCallback(
       async (signal) => {
         if (!serviceId || !range) return { key: slotsKey, serviceId, rows: [] }
-        const first = await api.get('/services/' + serviceId + '/slots?size=100&' + range, {
+        const endpoint = '/services/' + serviceId + '/slots?size=100&includeFull=true&' + range
+        const first = await api.get(endpoint, {
           signal,
           auth: false,
         })
         const rows = [...itemsOf(first)]
         for (let page = 2; rows.length < first.total; page++) {
           const next = itemsOf(
-            await api.get('/services/' + serviceId + '/slots?size=100&page=' + page + '&' + range, {
+            await api.get(endpoint + '&page=' + page, {
               signal,
               auth: false,
             }),
@@ -114,13 +115,13 @@ export default function BookingPage() {
   const remaining = hold
     ? Math.max(0, Math.ceil((new Date(hold.expiresAt).getTime() - now) / 1000))
     : 0
-  const validSlots = itemsOf(currentSlots?.rows).filter(
-    (item) =>
-      item.active !== false &&
-      item.reserved < item.capacity &&
-      new Date(item.startsAt).getTime() > now,
+  const upcomingSlots = itemsOf(currentSlots?.rows).filter(
+    (item) => item.active !== false && new Date(item.startsAt).getTime() > now,
   )
-  const slot = chosenSlot || validSlots.find((item) => item.id === restoreSlotId) || null
+  const slot =
+    chosenSlot ||
+    upcomingSlots.find((item) => item.id === restoreSlotId && item.reserved < item.capacity) ||
+    null
   function setSlot(value) {
     setRestoreSlotId(null)
     setChosenSlot(value)
@@ -251,25 +252,39 @@ export default function BookingPage() {
           {!hold ? (
             <>
               <Panel title="1. Chọn phòng khám & dịch vụ">
-                <ResourceState {...clinics} empty={!itemsOf(clinics.data).length}>
-                  <Field
-                    label="Phòng khám"
-                    type="select"
-                    value={clinicId}
-                    disabled={!!rescheduleId}
-                    onChange={(event) => {
-                      setClinic(event.target.value)
-                      setService('')
-                      setSlot(null)
-                    }}
-                  >
-                    <option value="">Chọn phòng khám</option>
-                    {itemsOf(clinics.data).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </Field>
+                <ResourceState {...clinics} empty={false}>
+                  {itemsOf(clinics.data).length === 0 ? (
+                    <section className="space-y-2">
+                      <p className="text-sm text-slate-700">
+                        Bạn có thể liên hệ trực tiếp cơ sở y tế để đặt lịch.
+                      </p>
+                      <Link
+                        to="/phong-kham"
+                        className="text-sm font-semibold text-brand-700 hover:underline"
+                      >
+                        Xem địa chỉ và số điện thoại cơ sở →
+                      </Link>
+                    </section>
+                  ) : (
+                    <Field
+                      label="Phòng khám"
+                      type="select"
+                      value={clinicId}
+                      disabled={!!rescheduleId}
+                      onChange={(event) => {
+                        setClinic(event.target.value)
+                        setService('')
+                        setSlot(null)
+                      }}
+                    >
+                      <option value="">Chọn phòng khám</option>
+                      {itemsOf(clinics.data).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </Field>
+                  )}
                 </ResourceState>
                 {clinicId && (
                   <ResourceState {...clinic} empty={!clinic.data}>
@@ -356,35 +371,52 @@ export default function BookingPage() {
                         </ResourceState>
                       ) : currentSlots ? (
                         <section className="relative">
-                          {validSlots.length ? (
+                          {upcomingSlots.length ? (
                             <section
                               className={
                                 'grid gap-3 sm:grid-cols-3 transition-opacity ' +
                                 (slotsPending ? 'opacity-60' : '')
                               }
                             >
-                              {validSlots.map((item) => (
-                                <button
-                                  type="button"
-                                  key={item.id}
-                                  aria-pressed={slot?.id === item.id}
-                                  disabled={slotsPending}
-                                  onClick={() => setSlot(item)}
-                                  className={
-                                    'rounded-xl border px-4 py-3 text-left disabled:cursor-wait ' +
-                                    (slot?.id === item.id
-                                      ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600'
-                                      : 'border-slate-200 bg-white hover:border-brand-300')
-                                  }
-                                >
-                                  <p className="text-sm font-bold text-slate-900">
-                                    {timeLabel(item.startsAt)} – {timeLabel(item.endsAt)}
-                                  </p>
-                                  <p className="mt-2 text-xs text-slate-500">
-                                    Còn {item.capacity - item.reserved} chỗ
-                                  </p>
-                                </button>
-                              ))}
+                              {upcomingSlots.map((item) => {
+                                const available = item.capacity - item.reserved
+                                const full = available <= 0
+                                return (
+                                  <button
+                                    type="button"
+                                    key={item.id}
+                                    aria-pressed={slot?.id === item.id}
+                                    disabled={slotsPending || full}
+                                    onClick={() => setSlot(item)}
+                                    className={
+                                      'rounded-xl border px-4 py-3 text-left ' +
+                                      (full
+                                        ? 'cursor-not-allowed border-slate-200 bg-slate-100'
+                                        : slot?.id === item.id
+                                          ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600'
+                                          : 'border-slate-200 bg-white hover:border-brand-300')
+                                    }
+                                  >
+                                    <p className="text-sm font-bold text-slate-900">
+                                      {timeLabel(item.startsAt)} – {timeLabel(item.endsAt)}
+                                    </p>
+                                    <p
+                                      className={
+                                        'mt-2 text-xs ' +
+                                        (available === 1
+                                          ? 'font-semibold text-amber-800'
+                                          : 'text-slate-500')
+                                      }
+                                    >
+                                      {full
+                                        ? 'Hết chỗ'
+                                        : available === 1
+                                          ? 'Chỉ còn 1 chỗ'
+                                          : `Còn ${available} chỗ`}
+                                    </p>
+                                  </button>
+                                )
+                              })}
                             </section>
                           ) : slotsPending ? (
                             <p
@@ -408,10 +440,10 @@ export default function BookingPage() {
                               </Link>
                             </section>
                           )}
-                          {slotsPending && validSlots.length > 0 && (
-                            <span className="sr-only" role="status">
+                          {slotsPending && upcomingSlots.length > 0 && (
+                            <p className="sr-only" role="status">
                               Đang tải giờ khám cho ngày mới
-                            </span>
+                            </p>
                           )}
                         </section>
                       ) : (

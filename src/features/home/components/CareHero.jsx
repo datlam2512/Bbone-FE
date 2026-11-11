@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
 import MediaImage from '@/shared/components/ui/MediaImage'
-import { demoMedia } from '@/shared/lib/media'
+import { careMedia } from '@/shared/lib/media'
 
 export default function CareHero() {
   return (
@@ -41,7 +41,7 @@ export default function CareHero() {
         </VStack>
         <VStack className="relative min-w-0 justify-center p-5 lg:p-7">
           <MediaImage
-            src={demoMedia.hero}
+            src={careMedia.hero}
             alt="Bác sĩ trò chuyện và tư vấn chăm sóc sức khỏe"
             priority
             className="aspect-video w-full rounded-xl lg:aspect-4/3"

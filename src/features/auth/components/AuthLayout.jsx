@@ -2,7 +2,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
 import { HStack } from '@astryxdesign/core/HStack'
 import MediaImage from '@/shared/components/ui/MediaImage'
-import { demoMedia } from '@/shared/lib/media'
+import { careMedia } from '@/shared/lib/media'
 
 export default function AuthLayout({ title, description, children, tabs = true }) {
   return (
@@ -26,7 +26,7 @@ export default function AuthLayout({ title, description, children, tabs = true }
           </p>
         </VStack>
         <MediaImage
-          src={demoMedia.hero}
+          src={careMedia.hero}
           alt="Trao đổi về chăm sóc sức khỏe tại phòng khám"
           className="hidden aspect-video rounded-xl sm:block"
         />

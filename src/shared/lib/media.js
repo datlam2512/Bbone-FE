@@ -14,6 +14,6 @@ export function mediaUrl(value) {
   }
 }
 
-export const demoMedia = {
+export const careMedia = {
   hero: '/media/demo/v1/home/care-hero.png',
 }

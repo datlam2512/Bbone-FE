@@ -9,14 +9,26 @@ import ProductCardContent from '@/features/catalog/components/ProductCardContent
 import ClinicCardContent from '@/features/clinics/components/ClinicCardContent'
 import ArticleCardContent from '@/features/knowledge/components/ArticleCardContent'
 
-const loadProducts = (signal) =>
-  catalogApi.products({ page: 1, size: 3, sort: 'price-desc' }, { signal })
-const loadClinics = (signal) => clinicsApi.list({ page: 1, size: 3 }, { signal })
+async function loadProducts(signal) {
+  const [store, directory] = await Promise.all([
+    catalogApi.products({ page: 1, size: 3, sort: 'price-desc' }, { signal }),
+    catalogApi.directory({}, { signal }),
+  ])
+  return { items: [...store.items, ...directory].slice(0, 3) }
+}
+
+async function loadClinics(signal) {
+  const [bookable, directory] = await Promise.all([
+    clinicsApi.list({ page: 1, size: 3 }, { signal }),
+    clinicsApi.directory({}, { signal }),
+  ])
+  return { items: [...bookable.items, ...directory].slice(0, 3) }
+}
 const loadArticles = (signal) => knowledgeApi.list({ page: 1, size: 3 }, { signal })
 
 function FeaturedSection({ title, subtitle, to, load, children }) {
   const resource = useResource(load)
-  const items = resource.data?.items || []
+  const items = resource.data?.items ?? []
   return (
     <section className="mt-14">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-4">
@@ -57,8 +69,8 @@ export default function FeaturedContent() {
         {(product) => <ProductCardContent product={product} />}
       </FeaturedSection>
       <FeaturedSection
-        title="Hệ thống phòng khám"
-        subtitle="Tìm hiểu cơ sở và dịch vụ trước khi đặt lịch."
+        title="Cơ sở khám xương khớp"
+        subtitle="Tra cứu cơ sở và kênh liên hệ chính thức."
         to="/phong-kham"
         load={loadClinics}
       >

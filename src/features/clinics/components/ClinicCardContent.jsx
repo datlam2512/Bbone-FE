@@ -1,10 +1,35 @@
 import { Link } from 'react-router-dom'
 import { publicPhone } from '@/shared/lib/contact'
-import { MapPin, Star } from 'lucide-react'
+import { Hospital, MapPin, Star } from 'lucide-react'
 import MediaImage from '@/shared/components/ui/MediaImage'
 
 export default function ClinicCardContent({ item }) {
   const { clinic, images, rating } = item
+  if (item.sourceUrl) {
+    return (
+      <section className="space-y-3">
+        <figure className="grid aspect-video place-items-center rounded-md bg-brand-50 text-brand-700">
+          <Hospital size={36} aria-hidden="true" />
+        </figure>
+        <h2 className="text-lg font-semibold">{clinic.name}</h2>
+        <p className="flex gap-2 text-sm leading-7 text-slate-600">
+          <MapPin size={17} className="mt-1 shrink-0" />
+          {clinic.address}
+        </p>
+        <footer className="flex flex-wrap gap-3 text-sm font-semibold text-brand-700">
+          {clinic.phone && <a href={'tel:' + clinic.phone}>Gọi {clinic.phone}</a>}
+          <a
+            href={item.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            Trang bệnh viện ↗
+          </a>
+        </footer>
+      </section>
+    )
+  }
   return (
     <>
       <MediaImage
