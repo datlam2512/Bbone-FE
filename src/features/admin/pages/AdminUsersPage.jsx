@@ -1,4 +1,5 @@
 import InviteStaffForm from '../components/InviteStaffForm'
+import AdminDialog from '../components/AdminDialog'
 import { useCallback, useState } from 'react'
 import { Button } from '@astryxdesign/core/Button'
 import { api } from '@/shared/api/client'
@@ -85,9 +86,11 @@ export default function AdminUsersPage() {
         <Button type="submit" label="Tìm kiếm" variant="primary" />
       </form>
       {selected && (
-        <ResourceState {...access} empty={!access.data}>
+        <AdminDialog open={!!selected} onClose={() => setSelected(null)} title={'Phân quyền: ' + selected.name}>
+          <Feedback command={command} />
+          <ResourceState {...access} empty={!access.data}>
           {access.data && (
-            <Panel title={'Phân quyền: ' + selected.name}>
+            <>
               <p className="text-sm leading-7 text-slate-500">
                 Danh sách cơ sở và vai trò phụ bên dưới sẽ thay thế toàn bộ phân công hiện tại. Sau
                 khi lưu, các phiên đăng nhập của tài khoản này sẽ được thu hồi.
@@ -154,9 +157,10 @@ export default function AdminUsersPage() {
                 <Submit command={command} label="Lưu phân quyền" />
                 <Button label="Đóng" variant="ghost" onClick={() => setSelected(null)} />
               </form>
-            </Panel>
+            </>
           )}
-        </ResourceState>
+          </ResourceState>
+        </AdminDialog>
       )}
       <ResourceState {...resource} empty={!itemsOf(resource.data).length}>
         <DataTable

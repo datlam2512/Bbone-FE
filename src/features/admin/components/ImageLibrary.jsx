@@ -10,6 +10,7 @@ import DataTable from '@/shared/components/ui/DataTable'
 import { Feedback, Field, Submit } from '@/shared/components/ui/Workflow'
 import { itemsOf, dateTime } from '@/shared/lib/workflows'
 import { mediaUrl } from '@/shared/lib/media'
+import AdminDialog from './AdminDialog'
 
 export default function ImageLibrary({ onSelect }) {
   const [page, setPage] = useState(1),
@@ -61,10 +62,9 @@ export default function ImageLibrary({ onSelect }) {
         liên kết cũ.
       </p>
       {selected && (
-        <form
-          onSubmit={change}
-          className="space-y-4 rounded-xl border border-orange-200 bg-orange-50 p-4"
-        >
+        <AdminDialog open={!!selected} onClose={() => setSelected(null)} title={selected.archived ? 'Khôi phục ảnh' : 'Lưu trữ ảnh'} size="max-w-xl">
+        <Feedback command={command} />
+        <form onSubmit={change} className="space-y-4">
           <p className="text-sm font-semibold">
             {selected.archived ? 'Khôi phục ảnh này?' : 'Lưu trữ ảnh chưa được sử dụng?'}
           </p>
@@ -75,6 +75,7 @@ export default function ImageLibrary({ onSelect }) {
           <Submit command={command} label="Xác nhận" />
           <Button label="Đóng" onClick={() => setSelected(null)} />
         </form>
+        </AdminDialog>
       )}
       <ResourceState
         {...resource}

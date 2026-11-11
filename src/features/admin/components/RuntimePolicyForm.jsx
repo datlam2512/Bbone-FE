@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { api } from '@/shared/api/client'
 import { useCommand } from '@/shared/hooks/use-command'
-import { Panel, Field, Feedback, Submit } from '@/shared/components/ui/Workflow'
+import { Field, Feedback, Submit } from '@/shared/components/ui/Workflow'
+import { Button } from '@astryxdesign/core/Button'
+import AdminDialog from './AdminDialog'
 
 const policyFields = [
   { name: 'holdMinutes', label: 'Giữ lịch (phút)', min: 1, max: 60 },
@@ -9,6 +12,7 @@ const policyFields = [
   { name: 'shippingFee', label: 'Phí giao hàng (VND)', min: 0, max: 1000000000 },
 ]
 export default function RuntimePolicyForm({ policy, onSaved }) {
+  const [open, setOpen] = useState(false)
   const command = useCommand()
   async function save(event) {
     event.preventDefault()
@@ -25,10 +29,15 @@ export default function RuntimePolicyForm({ policy, onSaved }) {
       body,
       'Đã cập nhật chính sách cho các giao dịch mới.',
     )
-    if (saved) onSaved()
+    if (saved) {
+      setOpen(false)
+      onSaved()
+    }
   }
   return (
-    <Panel title="Chính sách vận hành">
+    <section>
+      <Button label="Chỉnh sửa chính sách" variant="primary" onClick={() => setOpen(true)} />
+      <AdminDialog open={open} onClose={() => setOpen(false)} title="Chính sách vận hành" size="max-w-3xl">
       <Feedback command={command} />
       <p className="text-sm leading-7 text-slate-600">
         Đơn hàng và lịch đã tạo giữ chính sách đã ghi nhận. Thay đổi dưới đây áp dụng cho giao dịch
@@ -58,6 +67,7 @@ export default function RuntimePolicyForm({ policy, onSaved }) {
           <Submit command={command} label="Lưu chính sách" />
         </section>
       </form>
-    </Panel>
+      </AdminDialog>
+    </section>
   )
 }

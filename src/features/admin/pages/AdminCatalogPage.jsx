@@ -1,6 +1,7 @@
 import ImageUploadField from '../components/ImageUploadField'
 import MediaImage from '@/shared/components/ui/MediaImage'
 import RevisionInbox from '../components/RevisionInbox'
+import AdminDialog from '../components/AdminDialog'
 import { useCallback, useState } from 'react'
 import { HStack } from '@astryxdesign/core/HStack'
 import { Button } from '@astryxdesign/core/Button'
@@ -48,8 +49,6 @@ const configs = {
       ['name', 'Tên cơ sở'],
       ['address', 'Địa chỉ'],
       ['phone', 'Điện thoại'],
-      ['latitude', 'Vĩ độ', 'number'],
-      ['longitude', 'Kinh độ', 'number'],
       ['active', 'Đang hoạt động', 'checkbox'],
     ],
   },
@@ -245,9 +244,13 @@ export default function AdminCatalogPage({ kind = 'products' }) {
         </Field>
       )}
       {selected && (
-        <Panel
+        <AdminDialog
+          open={!!selected}
+          onClose={() => setSelected(null)}
+          size={kind === 'articles' ? 'max-w-5xl' : 'max-w-3xl'}
           title={selected.stock ? 'Điều chỉnh tồn kho' : selected.id ? 'Chỉnh sửa' : 'Thêm mới'}
         >
+          <Feedback command={command} />
           <form
             key={(selected.id || 'new') + (selected.stock ? 'stock' : '')}
             onSubmit={selected.stock ? stock : save}
@@ -324,7 +327,7 @@ export default function AdminCatalogPage({ kind = 'products' }) {
               <Button label="Đóng" onClick={() => setSelected(null)} />
             </HStack>
           </form>
-        </Panel>
+        </AdminDialog>
       )}
       <ResourceState {...resource} empty={!productRows.length}>
         <DataTable

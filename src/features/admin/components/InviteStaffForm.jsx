@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { api } from '@/shared/api/client'
 import { useCommand } from '@/shared/hooks/use-command'
-import { Panel, Field, Feedback, Submit } from '@/shared/components/ui/Workflow'
+import { Field, Feedback, Submit } from '@/shared/components/ui/Workflow'
 import { Button } from '@astryxdesign/core/Button'
+import AdminDialog from './AdminDialog'
 export default function InviteStaffForm({ clinics, onInvited }) {
   const [open, setOpen] = useState(false),
     command = useCommand()
@@ -28,13 +29,14 @@ export default function InviteStaffForm({ clinics, onInvited }) {
   return (
     <section className="space-y-4">
       <Button
-        label={open ? 'Đóng lời mời' : 'Mời nhân viên'}
+        label="Mời nhân viên"
         variant="primary"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(true)}
       />
       <Feedback command={command} />
       {open && (
-        <Panel title="Mời nhân viên mới">
+        <AdminDialog open={open} onClose={() => setOpen(false)} title="Mời nhân viên mới" size="max-w-3xl">
+          <Feedback command={command} />
           <form onSubmit={submit} className="space-y-4">
             <section className="grid gap-4 sm:grid-cols-2">
               <Field label="Họ tên" name="name" required minLength={2} maxLength={100} />
@@ -73,7 +75,7 @@ export default function InviteStaffForm({ clinics, onInvited }) {
             </label>
             <Submit command={command} label="Gửi lời mời" />
           </form>
-        </Panel>
+        </AdminDialog>
       )}
     </section>
   )

@@ -120,6 +120,7 @@ Thanh toán VietQR và một số thao tác giao hàng là mô phỏng theo cấ
 
 ## Tài liệu khác
 
+- [Hướng dẫn sử dụng website và trang quản trị](./docs/USER-GUIDE.md), gồm tài khoản/role thử nghiệm và luồng thao tác.
 - [Hướng dẫn phát triển](./docs/DEVELOPMENT.md)
 - [Phạm vi giao diện và giới hạn](./docs/UI-COVERAGE.md)
 - [Đặt lịch và quản trị](./docs/BOOKING-AND-ADMIN.md)

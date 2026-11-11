@@ -8,6 +8,7 @@ import { Panel, Field, Feedback, Submit, Status } from '@/shared/components/ui/W
 import ResourceState from '@/shared/components/ui/ResourceState'
 import DataTable from '@/shared/components/ui/DataTable'
 import { itemsOf, dateTime, parseList } from '@/shared/lib/workflows'
+import AdminDialog from './AdminDialog'
 
 export default function RevisionInbox({ onPublished }) {
   const [page, setPage] = useState(1)
@@ -114,8 +115,8 @@ export default function RevisionInbox({ onPublished }) {
         />
       </ResourceState>
       {selectedId && (
-        <Panel title="Nội dung bản sửa">
-          <Button label="Đóng bản sửa" variant="ghost" onClick={() => setSelectedId(null)} />
+        <AdminDialog open={!!selectedId} onClose={() => setSelectedId(null)} title="Nội dung bản sửa" size="max-w-4xl">
+          <Feedback command={command} />
           <ResourceState {...detail} empty={!revision}>
             {revision && (
               <>
@@ -180,7 +181,7 @@ export default function RevisionInbox({ onPublished }) {
               </>
             )}
           </ResourceState>
-        </Panel>
+        </AdminDialog>
       )}
     </Panel>
   )

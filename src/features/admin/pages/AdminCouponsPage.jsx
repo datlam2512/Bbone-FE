@@ -9,6 +9,7 @@ import { useResource } from '@/shared/hooks/use-resource'
 import { useCommand } from '@/shared/hooks/use-command'
 import { itemsOf, dateTime } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
+import AdminDialog from '../components/AdminDialog'
 
 export default function AdminCouponsPage() {
   const [page, setPage] = useState(1),
@@ -61,15 +62,16 @@ export default function AdminCouponsPage() {
       description="Mã áp dụng cho đơn mới theo thời hạn và hạn mức. Tắt mã không thay đổi giá trị các đơn đã đặt."
       actions={
         <Button
-          label={creating ? 'Đóng biểu mẫu' : 'Tạo mã giảm giá'}
+          label="Tạo mã giảm giá"
           variant="primary"
-          onClick={() => setCreating(!creating)}
+          onClick={() => setCreating(true)}
         />
       }
     >
       <Feedback command={command} />
       {creating && (
-        <Panel title="Tạo mã giảm giá">
+        <AdminDialog open={creating} onClose={() => setCreating(false)} title="Tạo mã giảm giá" size="max-w-2xl">
+          <Feedback command={command} />
           <form onSubmit={create} className="space-y-4">
             <section className="grid gap-4 sm:grid-cols-2">
               <Field name="code" label="Mã" required maxLength={80} pattern="[A-Za-z0-9_-]+" />
@@ -107,10 +109,11 @@ export default function AdminCouponsPage() {
             </section>
             <Submit command={command} label="Tạo mã" />
           </form>
-        </Panel>
+        </AdminDialog>
       )}
       {selected && (
-        <Panel title={selected.active ? 'Tắt mã ' + selected.code : 'Bật mã ' + selected.code}>
+        <AdminDialog open={!!selected} onClose={() => setSelected(null)} title={selected.active ? 'Tắt mã ' + selected.code : 'Bật mã ' + selected.code} size="max-w-xl">
+          <Feedback command={command} />
           <form onSubmit={toggle} className="space-y-4">
             <p className="text-sm leading-7">
               Mã hết hạn hoặc hết lượt vẫn không áp dụng được dù được bật.
@@ -122,7 +125,7 @@ export default function AdminCouponsPage() {
             <Submit command={command} label="Xác nhận" />
             <Button label="Đóng" onClick={() => setSelected(null)} />
           </form>
-        </Panel>
+        </AdminDialog>
       )}
       <ResourceState
         emptyTitle="Chưa có mã giảm giá"

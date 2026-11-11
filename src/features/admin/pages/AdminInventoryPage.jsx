@@ -9,6 +9,7 @@ import ResourceState from '@/shared/components/ui/ResourceState'
 import { useResource } from '@/shared/hooks/use-resource'
 import { useCommand } from '@/shared/hooks/use-command'
 import { itemsOf } from '@/shared/lib/workflows'
+import AdminDialog from '../components/AdminDialog'
 
 export default function AdminInventoryPage() {
   const [tomorrow] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10))
@@ -100,7 +101,8 @@ export default function AdminInventoryPage() {
         />
       </ResourceState>
       {product && (
-        <Panel title={'Các lô · ' + product.name}>
+        <AdminDialog open={!!product} onClose={() => { setProduct(null); setBatch(null) }} title={'Các lô · ' + product.name} size="max-w-5xl">
+          <Feedback command={command} />
           <ResourceState
             emptyTitle="Chưa có lô hàng"
             emptyDescription="Nhập lô mới ở biểu mẫu bên dưới sau khi đối soát tồn kho."
@@ -186,7 +188,7 @@ export default function AdminInventoryPage() {
             </section>
             <Submit command={command} label="Nhập kho" />
           </form>
-        </Panel>
+        </AdminDialog>
       )}
     </Page>
   )

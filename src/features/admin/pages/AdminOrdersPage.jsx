@@ -1,4 +1,5 @@
 import BankReceiptForm from '../components/BankReceiptForm'
+import AdminDialog from '../components/AdminDialog'
 import { useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { VStack } from '@astryxdesign/core/VStack'
@@ -199,7 +200,8 @@ export default function AdminOrdersPage({ shipments = false }) {
         ))}
       </Field>
       {creating && (
-        <Panel title="Vận đơn mới">
+        <AdminDialog open={creating} onClose={() => setCreating(false)} title="Vận đơn mới">
+          <Feedback command={command} />
           <ResourceState {...candidates} empty={!itemsOf(candidates.data).length}>
             <form onSubmit={create} className="grid gap-5 sm:grid-cols-2">
               <Field label="Đơn đang xử lý" name="orderId" type="select" required>
@@ -222,16 +224,11 @@ export default function AdminOrdersPage({ shipments = false }) {
               <Submit command={command} label="Tạo vận đơn" />
             </form>
           </ResourceState>
-        </Panel>
+        </AdminDialog>
       )}
       {selected && (
-        <Panel title="Chi tiết xử lý">
-          <Button
-            label="Đóng chi tiết"
-            size="sm"
-            variant="ghost"
-            onClick={() => setSelected(null)}
-          />
+        <AdminDialog open={!!selected} onClose={() => setSelected(null)} title="Chi tiết xử lý" size="max-w-4xl">
+          <Feedback command={command} />
           <ResourceState {...detail} empty={!row}>
             {row && (
               <>
@@ -359,7 +356,7 @@ export default function AdminOrdersPage({ shipments = false }) {
               </>
             )}
           </ResourceState>
-        </Panel>
+        </AdminDialog>
       )}
       <ResourceState {...resource} empty={!itemsOf(resource.data).length}>
         <DataTable

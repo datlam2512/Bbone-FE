@@ -11,6 +11,7 @@ import { useResource } from '@/shared/hooks/use-resource'
 import { useCommand } from '@/shared/hooks/use-command'
 import { itemsOf, dateTime } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
+import AdminDialog from '../components/AdminDialog'
 
 const labels = {
   Requested: 'Chờ duyệt',
@@ -122,9 +123,11 @@ export default function AdminReturnsPage() {
         />
       </ResourceState>
       {selected && (
-        <ResourceState {...detail} empty={!data}>
+        <AdminDialog open={!!selected} onClose={() => setSelected(null)} title={data ? 'Yêu cầu trả · ' + data.order.order.code : 'Chi tiết yêu cầu trả hàng'} size="max-w-4xl">
+          <Feedback command={command} />
+          <ResourceState {...detail} empty={!data}>
           {data && (
-            <Panel title={'Yêu cầu trả · ' + data.order.order.code}>
+            <>
               <p className="text-sm leading-7">Lý do: {request.reason}</p>
               <Status value={labels[request.status] || request.status} />
               {request.decisionReason && (
@@ -237,9 +240,10 @@ export default function AdminReturnsPage() {
               <HStack hAlign="end">
                 <Button label="Đóng chi tiết" onClick={() => setSelected(null)} />
               </HStack>
-            </Panel>
+            </>
           )}
-        </ResourceState>
+          </ResourceState>
+        </AdminDialog>
       )}
     </Page>
   )

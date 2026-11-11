@@ -8,6 +8,7 @@ import DataTable from '@/shared/components/ui/DataTable'
 import ResourceState from '@/shared/components/ui/ResourceState'
 import { itemsOf, dateTime } from '@/shared/lib/workflows'
 import { formatMoney } from '@/shared/lib/format'
+import AdminDialog from '../components/AdminDialog'
 export default function RefundsPage() {
   const [page, setPage] = useState(1)
   const [selectedId, setSelectedId] = useState(null)
@@ -69,8 +70,8 @@ export default function RefundsPage() {
     >
       <Feedback command={command} />
       {selectedId && (
-        <Panel title="Chi tiết hoàn tiền">
-          <Button label="Đóng chi tiết" variant="ghost" onClick={() => setSelectedId(null)} />
+        <AdminDialog open={!!selectedId} onClose={() => setSelectedId(null)} title="Chi tiết hoàn tiền" size="max-w-3xl">
+          <Feedback command={command} />
           <ResourceState {...detail} empty={!data}>
             {data && (
               <>
@@ -142,7 +143,7 @@ export default function RefundsPage() {
               </>
             )}
           </ResourceState>
-        </Panel>
+        </AdminDialog>
       )}
       <ResourceState {...refunds} empty={!itemsOf(refunds.data).length}>
         <DataTable
