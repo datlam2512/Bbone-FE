@@ -44,6 +44,16 @@ export default function StaffPage({ mode = 'overview' }) {
       [patients, page, search, status],
     ),
   )
+  const clinics = useResource(
+    useCallback(
+      (signal) =>
+        workspacePath === '/quan-tri'
+          ? api.get('/admin/clinics?size=100', { signal })
+          : Promise.resolve([]),
+      [workspacePath],
+    ),
+  )
+  const clinicNames = new Map(itemsOf(clinics.data).map((clinic) => [clinic.id, clinic.name]))
   const events = useResource(
     useCallback(
       (signal) =>
@@ -178,6 +188,13 @@ export default function StaffPage({ mode = 'overview' }) {
           ) : (
             <>
               <Status value={selected.status} />
+              <p className="text-sm">
+                Cơ sở tiếp nhận:{' '}
+                {selected.clinicName ||
+                  selected.clinic?.name ||
+                  clinicNames.get(selected.clinicId) ||
+                  'Chưa xác định'}
+              </p>
               {['Admin', 'ClinicManager'].includes(role) &&
                 ['Confirmed', 'CheckedIn'].includes(selected.status) && (
                   <DoctorAssignmentForm
@@ -264,6 +281,14 @@ export default function StaffPage({ mode = 'overview' }) {
               : [
                   { label: 'Thời gian', render: (r) => dateTime(r.startsAt) },
                   { label: 'Người khám', key: 'patientName' },
+                  {
+                    label: 'Phòng khám / Bệnh viện',
+                    render: (r) =>
+                      r.clinicName ||
+                      r.clinic?.name ||
+                      clinicNames.get(r.clinicId) ||
+                      'Chưa xác định',
+                  },
                   { label: 'Dịch vụ', key: 'serviceName' },
                   { label: 'Trạng thái', render: (r) => <Status value={r.status} /> },
                   {
