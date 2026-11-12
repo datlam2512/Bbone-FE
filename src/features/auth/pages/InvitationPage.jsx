@@ -16,7 +16,7 @@ export default function InvitationPage() {
     const result = await command.run(
       () => api.post('/auth/invitations/enroll', { token }, { auth: false }),
       { token },
-      'Đã chuẩn bị xác thực hai bước.',
+      'Đã chuẩn bị kích hoạt tài khoản.',
     )
     if (result) setEnrollment(result)
   }
@@ -28,21 +28,20 @@ export default function InvitationPage() {
       return
     }
     setError('')
-    const body = { token, password: f.get('password'), totpCode: f.get('totpCode') }
+    const body = { token, password: f.get('password'), totpCode: enrollment?.requiresMfa ? f.get('totpCode') : null }
     const result = await command.run(
       () => api.post('/auth/invitations/accept', body, { auth: false }),
       body,
-      'Đã kích hoạt tài khoản nhân viên.',
+      enrollment?.requiresMfa ? 'Đã kích hoạt tài khoản nhân viên.' : 'Đã kích hoạt tài khoản quản trị.',
     )
     if (result) {
       setDone(true)
-      setEnrollment(null)
     }
   }
   return (
     <Page
       title="Kích hoạt tài khoản nhân viên"
-      description="Hoàn tất lời mời và xác thực hai bước trước khi truy cập không gian làm việc."
+      description="Hoàn tất lời mời để truy cập không gian làm việc."
     >
       <Feedback command={command} />
       {error && (
@@ -53,8 +52,7 @@ export default function InvitationPage() {
       {done ? (
         <Panel title="Tài khoản đã được kích hoạt">
           <p className="text-sm leading-7">
-            Đăng nhập bằng email được mời, mật khẩu vừa thiết lập và mã từ ứng dụng xác thực. Nếu
-            đang dùng tài khoản khác, hãy đăng xuất trước.
+            Đăng nhập bằng email được mời và mật khẩu vừa thiết lập{enrollment?.requiresMfa ? ' cùng mã từ ứng dụng xác thực' : ''}. Nếu đang dùng tài khoản khác, hãy đăng xuất trước.
           </p>
           <Link to="/dang-nhap" className="font-semibold text-brand-700">
             Đến trang đăng nhập →
@@ -67,22 +65,21 @@ export default function InvitationPage() {
           </p>
         </Panel>
       ) : !enrollment ? (
-        <Panel title="1. Thiết lập ứng dụng xác thực">
+        <Panel title="Kích hoạt lời mời">
           <p className="text-sm leading-7">
-            Chuẩn bị ứng dụng xác thực TOTP trên điện thoại. QR tiếp theo chứa khóa riêng cho tài
-            khoản của bạn.
+            Nhấn tiếp tục để hoàn tất kích hoạt lời mời.
           </p>
           <Button
-            label="Thiết lập xác thực hai bước"
+            label="Tiếp tục"
             variant="primary"
             onClick={enroll}
             isLoading={command.pending}
           />
         </Panel>
       ) : (
-        <Panel title="2. Quét QR và đặt mật khẩu">
-          <section className="grid gap-6 md:grid-cols-2">
-            <section className="space-y-4">
+        <Panel title={enrollment.requiresMfa ? 'Quét QR và đặt mật khẩu' : 'Đặt mật khẩu'}>
+          <section className={enrollment.requiresMfa ? 'grid gap-6 md:grid-cols-2' : ''}>
+            {enrollment.requiresMfa && <section className="space-y-4">
               <img
                 src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(enrollment.qrSvg)}
                 alt="QR thiết lập ứng dụng xác thực"
@@ -96,7 +93,7 @@ export default function InvitationPage() {
                   {enrollment.secret}
                 </p>
               </details>
-            </section>
+            </section>}
             <form onSubmit={accept} className="space-y-4">
               <PasswordField newPassword minLength={16} />
               <Field
@@ -108,7 +105,7 @@ export default function InvitationPage() {
                 maxLength={128}
                 autoComplete="new-password"
               />
-              <Field
+              {enrollment.requiresMfa && <Field
                 label="Mã xác thực 6 số"
                 name="totpCode"
                 required
@@ -116,9 +113,9 @@ export default function InvitationPage() {
                 pattern="[0-9]{6}"
                 maxLength={6}
                 autoComplete="one-time-code"
-              />
+              />}
               <p className="text-xs leading-6 text-slate-500">
-                Mật khẩu cần 16–128 ký tự. Không chia sẻ QR, khóa xác thực hoặc mã OTP.
+                Mật khẩu cần 16–128 ký tự.{enrollment.requiresMfa ? ' Không chia sẻ QR, khóa xác thực hoặc mã OTP.' : ''}
               </p>
               <Submit command={command} label="Kích hoạt tài khoản" />
             </form>

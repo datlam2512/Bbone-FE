@@ -19,7 +19,9 @@ export default function InviteStaffForm({ clinics, onInvited }) {
     const saved = await command.run(
       () => api.post('/admin/staff-invitations', body),
       body,
-      'Đã tạo lời mời và đưa email vào hàng đợi. Nhân viên cần xác minh và thiết lập MFA trước khi kích hoạt.',
+      body.role === 'Admin'
+        ? 'Đã tạo lời mời quản trị và đưa email vào hàng đợi.'
+        : 'Đã tạo lời mời và đưa email vào hàng đợi. Nhân viên cần thiết lập MFA trước khi kích hoạt.',
     )
     if (saved) {
       setOpen(false)

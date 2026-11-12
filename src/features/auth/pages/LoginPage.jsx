@@ -15,7 +15,7 @@ export default function LoginPage() {
     user = useAuthStore((s) => s.user)
   const [pending, setPending] = useState(false),
     [error, setError] = useState(null),
-    [mfa, setMfa] = useState(false),
+    [totpRequired, setTotpRequired] = useState(false),
     [verify, setVerify] = useState(false)
   if (user) return <Navigate to={loginDestination(user.role, location.state?.from)} replace />
   async function submit(e) {
@@ -35,7 +35,7 @@ export default function LoginPage() {
       navigate(loginDestination(authenticated.role, location.state?.from), { replace: true })
     } catch (failure) {
       setError(failure.message)
-      if (failure.code?.includes('MFA')) setMfa(true)
+      if (failure.code === 'MFA_REQUIRED') setTotpRequired(true)
       if (failure.code?.includes('VERIF')) setVerify(true)
     } finally {
       setPending(false)
@@ -69,14 +69,8 @@ export default function LoginPage() {
           >
             Quên mật khẩu?
           </Link>
-          <Button
-            label={mfa ? 'Ẩn mã xác thực' : 'Tài khoản có xác thực hai bước?'}
-            variant="ghost"
-            size="sm"
-            onClick={() => setMfa(!mfa)}
-          />
         </VStack>
-        {mfa && (
+        {totpRequired && (
           <Field
             label="Mã xác thực 6 chữ số"
             name="totpCode"
