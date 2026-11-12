@@ -9,10 +9,12 @@ export default function RootLayout() {
         <aside
           role="status"
           aria-live="polite"
-          className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 bg-brand-700 px-4 py-2 text-xs font-medium text-white shadow"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-white/75 px-5 backdrop-blur-sm"
         >
-          <LoaderCircle size={14} className="animate-spin motion-reduce:animate-none" />
-          Đang mở trang...
+          <section className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-5 text-sm font-medium text-brand-700 shadow-lg">
+            <LoaderCircle size={22} className="animate-spin motion-reduce:animate-none" />
+            Đang mở trang...
+          </section>
         </aside>
       )}
       <Outlet />
