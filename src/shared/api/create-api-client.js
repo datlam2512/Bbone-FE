@@ -34,7 +34,8 @@ export function createApiClient({
   updateTokens,
   clearSession,
   fetcher = (...args) => fetch(...args),
-  timeoutMs = 15000,
+  // Free hosting may need tens of seconds to wake an idle API instance.
+  timeoutMs = 60000,
 }) {
   let refreshFlight = null
 

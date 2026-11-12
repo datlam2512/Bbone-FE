@@ -1,11 +1,21 @@
+import { useEffect, useState } from 'react'
+import { LoaderCircle } from 'lucide-react'
+
 export default function AppLoading() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 4000)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div
+    <main
       role="status"
-      className="flex min-h-screen items-center justify-center gap-3 text-sm text-brand-600"
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center gap-3 text-sm text-brand-700"
     >
-      <span className="size-5 animate-spin rounded-full border-2 border-brand-100 border-t-brand-600 motion-reduce:animate-none" />
-      Đang tải BBONE...
-    </div>
+      <LoaderCircle size={20} className="animate-spin motion-reduce:animate-none" />
+      {slow ? 'Đang tải trang, vui lòng đợi thêm chút...' : 'Đang tải BBONE...'}
+    </main>
   )
 }
