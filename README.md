@@ -99,7 +99,7 @@ npm.cmd run check        # Lint + test + build
    ```
 
 4. Thêm URL Vercel chính xác vào cấu hình CORS của backend (`Cors__Origins__0`) rồi deploy lại backend.
-5. Kiểm tra đăng nhập, sản phẩm, ảnh `/media`, đặt lịch và tải trực tiếp/refresh các route con. Với React Router SPA, thêm rewrite về `/index.html` nếu deep link chưa được xử lý.
+5. Kiểm tra đăng nhập, sản phẩm, ảnh `/media`, đặt lịch và tải trực tiếp/refresh các route con. `vercel.json` trong repo tự rewrite các deep link về `/index.html` để React Router xử lý route.
 
 Không đặt mật khẩu hay secret trong Vercel `VITE_*`; các giá trị này được công khai trong mã frontend. Xem hướng dẫn backend trong repo `Bbone-BE` để cấu hình Render/PostgreSQL và chế độ demo.
 

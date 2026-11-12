@@ -105,6 +105,23 @@ export default function AuthSupportPage({ mode = 'register' }) {
             Địa chỉ đã nhập: <strong>{email}</strong>. Hãy kiểm tra cả mục thư rác. Chỉ tài khoản đã
             xác minh mới có thể đăng nhập.
           </p>
+          {mode === 'register' && (
+            <form onSubmit={resend} className="space-y-4 border-t border-slate-200 pt-5">
+              <Field
+                label="Chưa nhận được email?"
+                name="email"
+                type="email"
+                defaultValue={email}
+                required
+                maxLength={254}
+              />
+              <Button
+                type="submit"
+                label="Gửi lại email xác minh"
+                isLoading={command.pending}
+              />
+            </form>
+          )}
           <Link
             to="/xac-minh"
             className="rounded-lg bg-brand-600 px-5 py-3 text-center text-sm font-semibold text-white"
