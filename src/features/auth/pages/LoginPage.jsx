@@ -15,6 +15,7 @@ export default function LoginPage() {
     user = useAuthStore((s) => s.user)
   const [pending, setPending] = useState(false),
     [error, setError] = useState(null),
+    [totpRequired, setTotpRequired] = useState(false),
     [verify, setVerify] = useState(false)
   if (user) return <Navigate to={loginDestination(user.role, location.state?.from)} replace />
   async function submit(e) {
@@ -28,11 +29,13 @@ export default function LoginPage() {
       const authenticated = await signIn({
         email: f.get('email').trim(),
         password: f.get('password'),
+        totpCode: f.get('totpCode')?.trim() || null,
         roleContext: null,
       })
       navigate(loginDestination(authenticated.role, location.state?.from), { replace: true })
     } catch (failure) {
       setError(failure.message)
+      if (failure.code === 'MFA_REQUIRED') setTotpRequired(true)
       if (failure.code?.includes('VERIF')) setVerify(true)
     } finally {
       setPending(false)
@@ -59,6 +62,17 @@ export default function LoginPage() {
           maxLength={254}
         />
         <PasswordField />
+        {totpRequired && (
+          <Field
+            label="Mã xác thực 6 chữ số"
+            name="totpCode"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            required
+          />
+        )}
         <VStack gap={3}>
           <Link
             to="/quen-mat-khau"
