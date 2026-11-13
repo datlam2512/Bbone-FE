@@ -1,30 +1,32 @@
 # BBONE Frontend
 
-Website BBONE 2.0 là dự án portfolio về chăm sóc sức khỏe xương khớp, xây dựng bằng React. Frontend cung cấp trải nghiệm cho khách hàng cùng các workspace nhân viên và quản trị; dữ liệu nghiệp vụ được lấy từ REST API backend.
+Website BBONE 2.0 dành cho khách hàng, phòng khám và nhân viên quản trị. Ứng dụng viết bằng React và Vite, gọi dữ liệu nghiệp vụ qua REST API của [BBONE Backend](../Bbone-BE/README.md).
 
-> Dự án phục vụ học tập/portfolio. VietQR và vận chuyển có chế độ mô phỏng; không có giao dịch chuyển tiền thật hoặc vận đơn hãng vận chuyển thật.
+> Dự án portfolio. Thanh toán VietQR và giao vận có thể chạy ở chế độ mô phỏng; không có giao dịch tiền thật hoặc vận đơn hãng vận chuyển thật.
 
 ## Công nghệ
 
-- React 19, Vite 8, JavaScript ES modules.
-- React Router cho điều hướng trang; Zustand cho trạng thái client.
-- Tailwind CSS 4 và Astryx Design System cho giao diện.
-- Fetch API qua lớp client dùng chung; kiểm tra chất lượng với ESLint, Node test runner và Vite build.
+- React 19, JavaScript ES modules, Vite 8.
+- React Router, Zustand, Tailwind CSS 4 và Astryx Design System.
+- Fetch API qua client dùng chung; Node test runner, ESLint và Vite build.
+
+## Yêu cầu
+
+- Node.js `>=22.12.0` và npm.
+- Backend đang chạy tại `http://localhost:5080` nếu cần dữ liệu động.
 
 ## Chạy local
 
-Yêu cầu Node.js `>=22.12.0`, npm và backend đang chạy nếu cần dùng dữ liệu động.
+Tại thư mục frontend:
 
 ```powershell
 npm.cmd ci
 npm.cmd run dev
 ```
 
-Mở `http://127.0.0.1:5173`. Vite proxy các request `/api` và `/media` tới backend `http://localhost:5080`.
+Mở `http://127.0.0.1:5173`. Vite proxy các request `/api` và `/media` tới `http://localhost:5080`.
 
-### Cấu hình API
-
-Mặc định không cần file môi trường để chạy local. Nếu cần đổi địa chỉ backend, copy `.env.example` thành `.env.local` rồi chỉnh:
+Mặc định không cần file môi trường. Nếu backend chạy ở địa chỉ khác, tạo `.env.local`:
 
 ```dotenv
 VITE_API_BASE_URL=/api/v1
@@ -33,44 +35,16 @@ BACKEND_URL=http://localhost:5080
 VITE_MEDIA_BASE_URL=
 ```
 
-Khởi động lại Vite sau khi thay đổi biến môi trường. Chỉ các biến `VITE_*` được đưa vào bundle trình duyệt: **không đặt mật khẩu, API key, signing key hoặc secret trong các biến này**.
+Khởi động lại Vite sau khi sửa biến. Chỉ biến `VITE_*` được đóng gói vào trình duyệt; không đặt mật khẩu, API key, signing key hay secret trong đó. `BACKEND_URL` chỉ dùng cho proxy của Vite khi phát triển.
 
-## Tính năng
+## Các luồng chính
 
-### Khách hàng
+- Khách hàng: đăng ký/đăng nhập, xác minh email, sản phẩm, bài viết, đặt lịch, giỏ hàng, đơn, thông báo và hồ sơ.
+- Phòng khám/nhân viên: workspace theo vai trò và cơ sở tại `/nhan-vien`.
+- Quản trị: workspace tại `/quan-tri` để quản lý sản phẩm, phòng khám, lịch, nội dung, đơn, kho và tài khoản theo quyền.
+- Upload ảnh sản phẩm, phòng khám, bài viết gọi backend; backend xử lý ảnh, lưu object trong Supabase Storage và trả URL để biểu mẫu lưu cùng bản ghi. Không upload ảnh riêng tư hoặc hồ sơ sức khỏe qua luồng ảnh catalogue.
 
-- Trang chủ, danh sách/chi tiết sản phẩm, tìm kiếm và bộ lọc.
-- Danh sách, chi tiết phòng khám và luồng chọn dịch vụ, ngày, giờ đặt lịch.
-- Bài viết kiến thức và trang nội dung thông tin.
-- Đăng ký, đăng nhập, xác minh email, quên/đặt lại mật khẩu.
-- Giỏ hàng, mã ưu đãi, báo giá, checkout, lịch sử đơn hàng và yêu cầu hủy/hoàn trả.
-- Tài khoản, địa chỉ, lịch hẹn, đơn hàng, yêu thích, thông báo và hồ sơ.
-- Bảng câu hỏi sàng lọc triệu chứng; kết quả là gợi ý tham khảo, không phải chẩn đoán.
-
-### Nhân viên và quản trị
-
-- Workspace nhân viên tại `/nhan-vien`: lịch, tiếp đón, ca làm và nghiệp vụ theo quyền/cơ sở.
-- Workspace quản trị tại `/quan-tri`: dashboard, người dùng, sản phẩm, phòng khám, dịch vụ, nội dung, kho, đơn hàng, giao hàng, trả hàng, hoàn tiền, báo cáo và cấu hình.
-- Biểu mẫu quản trị mở dạng popup; quyền trên frontend chỉ hỗ trợ điều hướng, còn backend mới là nguồn xác thực cuối cùng.
-
-## Cấu trúc dự án
-
-```text
-src/
-  app/          Router, layouts, route guards, khởi tạo ứng dụng
-  features/     Tính năng theo nghiệp vụ (auth, catalog, cart, booking, admin...)
-  shared/
-    api/        API client, lỗi và query string
-    components/ Thành phần dùng chung
-    config/     Cấu hình frontend
-    hooks/      Hooks tải dữ liệu và gửi lệnh
-    lib/        Hàm tiện ích
-    styles/     Tailwind và design tokens
-tests/          Kiểm thử tự động
-docs/           Hướng dẫn, phạm vi và nghiệp vụ
-```
-
-Điểm bắt đầu khi đọc mã: `src/main.jsx`, `src/app/router.jsx`, `src/shared/api/create-api-client.js`, `src/shared/hooks/use-resource.js`, `src/shared/hooks/use-command.js`.
+Xem [hướng dẫn sử dụng](./docs/USER-GUIDE.md), [hướng dẫn phát triển](./docs/DEVELOPMENT.md), [phạm vi giao diện](./docs/UI-COVERAGE.md) và [đặt lịch/quản trị](./docs/BOOKING-AND-ADMIN.md).
 
 ## Lệnh phát triển
 
@@ -78,42 +52,50 @@ docs/           Hướng dẫn, phạm vi và nghiệp vụ
 npm.cmd run dev          # Vite development server
 npm.cmd run lint         # ESLint
 npm.cmd test             # Node test runner
-npm.cmd run build        # Production bundle vào dist/
-npm.cmd run preview      # Xem thử dist tại 127.0.0.1:4173
+npm.cmd run build        # Production bundle trong dist/
+npm.cmd run preview      # Xem thử production build
 npm.cmd run format:check # Kiểm tra Prettier
 npm.cmd run check        # Lint + test + build
 ```
 
-`preview` không sử dụng Vite dev proxy; cần cấu hình API origin/reverse proxy tương ứng.
+`preview` không dùng Vite dev proxy; cần API origin hoặc reverse proxy production tương ứng.
 
-## Deploy frontend lên Vercel
+## Deploy lên Vercel
 
-1. Import repository `Bbone-FE` từ Git provider.
-2. Chọn framework Vite, build command `npm run build`, output directory `dist`.
-3. Thêm biến môi trường trong Project Settings:
+1. Import repository frontend và chọn **Vite**.
+2. Build command: `npm run build`; output directory: `dist`.
+3. Trong **Project Settings → Environment Variables**, đặt:
 
    ```text
-   VITE_API_BASE_URL=https://<backend-host>/api/v1
-   VITE_MEDIA_BASE_URL=https://<backend-host>
+   VITE_API_BASE_URL=https://<api-domain>.onrender.com/api/v1
+   VITE_MEDIA_BASE_URL=https://<api-domain>.onrender.com
    VITE_APP_NAME=BBONE
    ```
 
-4. Thêm URL Vercel chính xác vào cấu hình CORS của backend (`Cors__Origins__0`) rồi deploy lại backend.
-5. Kiểm tra đăng nhập, sản phẩm, ảnh `/media`, đặt lịch và tải trực tiếp/refresh các route con. `vercel.json` trong repo tự rewrite các deep link về `/index.html` để React Router xử lý route.
+4. Trên Render, thêm origin frontend chính xác vào `Cors__Origins__0` rồi deploy lại backend.
+5. Kiểm tra trang chủ, đăng nhập, route con, tải trực tiếp/refresh trang phòng khám, đặt lịch, sản phẩm và ảnh.
 
-Không đặt mật khẩu hay secret trong Vercel `VITE_*`; các giá trị này được công khai trong mã frontend. Xem hướng dẫn backend trong repo `Bbone-BE` để cấu hình Render/PostgreSQL và chế độ demo.
+`vercel.json` rewrite route con về `/index.html`, giúp React Router xử lý khi tải lại trang. Ảnh Supabase dùng URL đầy đủ; `VITE_MEDIA_BASE_URL` chủ yếu hỗ trợ đường dẫn media cũ như `/media/...`.
 
-## Bảo mật và giới hạn
+Không lưu bất kỳ secret nào trong biến `VITE_*`: các giá trị này công khai trong bundle trình duyệt. URL API và cấu hình Supabase Storage thuộc backend; xem README backend để cấu hình Render, database, bucket và email.
 
-- Access token nằm trong bộ nhớ; frontend không lưu token hoặc hồ sơ sức khỏe vào `localStorage`.
-- Giỏ hàng phía client chỉ giữ mã sản phẩm và số lượng; backend tính lại giá, tồn kho và quyền trên mỗi thao tác.
-- Thanh toán VietQR có thể bật mô phỏng cho portfolio. Giao diện thể hiện rõ “mô phỏng, không thu tiền thật”; không được hiểu là tiền đã vào tài khoản.
-- Sàng lọc sức khỏe không chẩn đoán và không thay thế khám trực tiếp.
-- Dữ liệu seed và tài khoản Development chỉ dùng để trình diễn; không sử dụng như dữ liệu sản xuất.
+## Ghi chú bảo mật và dữ liệu
 
-## Tài liệu
+- Access token chỉ giữ trong bộ nhớ; frontend không lưu token hay hồ sơ sức khỏe trong `localStorage`.
+- Backend là nguồn xác thực cuối cùng cho quyền, giá, tồn kho và dữ liệu đặt lịch. Ẩn nút trên giao diện không thay thế kiểm tra quyền phía server.
+- Giỏ hàng chỉ giữ mã sản phẩm/số lượng; backend tính lại giá và tồn kho.
+- Sàng lọc triệu chứng chỉ cung cấp thông tin tham khảo, không phải chẩn đoán.
+- Tài khoản/dữ liệu demo chỉ dành Development.
 
-- [Hướng dẫn sử dụng website](./docs/USER-GUIDE.md)
-- [Hướng dẫn phát triển](./docs/DEVELOPMENT.md)
-- [Phạm vi giao diện](./docs/UI-COVERAGE.md)
-- [Đặt lịch và quản trị](./docs/BOOKING-AND-ADMIN.md)
+## Cấu trúc mã
+
+```text
+src/
+  app/          Router, layout, route guards, khởi tạo ứng dụng
+  features/     Tính năng theo nghiệp vụ
+  shared/       API client, component, hook, config và tiện ích
+tests/          Kiểm thử tự động
+docs/           Hướng dẫn và phạm vi nghiệp vụ
+```
+
+Điểm bắt đầu để đọc mã: `src/main.jsx`, `src/app/router.jsx`, `src/shared/api/create-api-client.js`, `src/shared/hooks/use-resource.js` và `src/shared/hooks/use-command.js`.
